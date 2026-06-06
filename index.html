@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DrCardata PRO - WebApp Builder GAS-Blogger v2</title>
+    
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://translate.googleapis.com">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #080808;
+            --surface-color: #1a1a1a;
+            --surface-hover: #262626;
+            --border-color: #333333;
+            --primary-red: #e60000;
+            --primary-dark: #b30000;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-red); }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden; 
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        button, .admin-tab, .tile, .icon-item, .context-menu-item { touch-action: manipulation; }
+
+        .bg-animated {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 0;
+            background: radial-gradient(circle at 50% 50%, #1a0000 0%, #050505 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite; 
+            transform: translateZ(0);
+            will-change: background-position;
+        }
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 1;
+            background-image: linear-gradient(rgba(230, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(230, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none; box-shadow: inset 0 0 100px #000;
+        }
+        @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        .header-widget, .sidebar, .footer, .fauxcolumn-outer { display: none !important; }
+        #BloggerAppContainer {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            z-index: 999999; display: flex; flex-direction: column;
+            overflow-y: auto; overflow-x: hidden; background: transparent;
+        }
+
+        .translate-wrapper {
+            position: relative; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px;
+            cursor: pointer; transition: 0.2s; margin-right: 5px; overflow: hidden;
+        }
+        .translate-wrapper:hover { background: var(--primary-red); border-color: var(--primary-red); }
+        .translate-wrapper i { color: var(--text-main); font-size: 1.1rem; pointer-events: none; z-index: 1; transition: 0.2s; }
+        .translate-wrapper:hover i { color: #fff; transform: translateY(-2px); }
+        #google_translate_element { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; opacity: 0.01; }
+        .goog-te-gadget { font-size: 0px !important; color: transparent !important; width: 100%; height: 100%; }
+        .goog-te-gadget .goog-te-combo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; opacity: 0; }
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+        body { top: 0px !important; }
+
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: #080808; z-index: 9999999; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.3s ease-out;
+        }
+        .logo-container { padding: 20px; border-radius: 12px; background: var(--surface-color); border: 1px solid var(--border-color); box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+        .welcome-logo { max-width: 250px; max-height: 250px; object-fit: contain; }
+        .loading-text { margin-top: 25px; color: var(--primary-red); font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; }
+
+        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+        .login-box {
+            background: rgba(20, 20, 20, 0.98); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            width: 85%; max-width: 380px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
+        }
+        .login-box.active { padding: 40px 35px; }
+        .login-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary-red); }
+        .login-logo-container { cursor: pointer; transition: all 0.3s ease; padding: 10px; }
+        .login-logo { font-size: 4rem; color: var(--primary-red); margin-bottom: 15px; }
+        .login-box.active .login-logo-container { transform: scale(0.65) translateY(-15px); margin-bottom: -35px; }
+        .click-hint { font-size: 0.85rem; color: var(--primary-red); letter-spacing: 2px; font-weight: bold; animation: blink 1.5s infinite; }
+        .login-box.active .click-hint { opacity: 0; max-height: 0; overflow: hidden; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .login-form-wrap { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; transform: translateY(-10px); }
+        .login-box.active .login-form-wrap { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 15px; }
+        .login-box h2 { font-weight: 700; letter-spacing: 2px; margin: 0 0 25px 0; font-size: 1.5rem; color: #fff;}
+        .input-group { margin-bottom: 20px; text-align: left; position: relative; }
+        .input-group i { position: absolute; top: 14px; left: 15px; color: var(--text-muted); font-size: 1.1rem; transition: 0.3s; }
+        .input-group input { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.8); color: white; border-radius: 6px; box-sizing: border-box; font-size: 1rem; transition: 0.2s; }
+        .input-group input:focus { outline: none; border-color: var(--primary-red); background: #000; }
+        .input-group input:focus + i { color: var(--primary-red); }
+        
+        .btn-login { background: var(--primary-red); color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 1.1rem; cursor: pointer; font-weight: bold; letter-spacing: 1px; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-login:hover { background: var(--primary-dark); }
+        .btn-wa { background: #25D366; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 1.1rem; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
+
+        .app-header {
+            background: rgba(15, 15, 15, 0.98); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 2px solid var(--primary-red); flex-shrink: 0; z-index: 100;
+        }
+        .app-header .header-left { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-muted); }
+        .app-header .header-left i { font-size: 1.8rem; color: var(--primary-red); }
+        .app-header .header-logo { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
+        .app-header .header-logo span { color: var(--primary-red); }
+        .app-header .header-right { display: flex; align-items: center; gap: 8px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
+        
+        .btn-logout { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1.3rem; padding: 0; transition: transform 0.2s;}
+        .btn-logout:hover { transform: scale(1.1); }
+        .btn-chat-header, .btn-profile { background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        .btn-chat-header:hover, .btn-profile:hover { border-color: var(--primary-red); }
+        .btn-chat-header { width: 35px; height: 35px; }
+        .btn-profile { padding: 6px 12px; font-size: 0.95rem; gap: 8px; font-weight: 600;}
+
+        #dashboardScreen { display: none; padding: 20px; flex: 1; overflow-y: auto; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
+        .dashboard-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; height: 100%; }
+        .left-pane { flex: 0 0 25%; display: flex; flex-direction: column; gap: 15px; }
+        .right-pane { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); grid-auto-rows: minmax(110px, 1fr); gap: 15px; align-content: start; }
+
+        .tile {
+            background: rgba(25, 25, 25, 0.95); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; text-align: center; padding: 15px 10px; transition: transform 0.15s ease, background 0.2s, border-color 0.2s; transform: translateZ(0);
+        }
+        .tile:active { transform: scale(0.95); }
+        .tile:hover { background: rgba(35, 35, 35, 1); border-color: var(--primary-red); transform: scale(1.03); }
+        .tile i { font-size: 2.5rem; margin-bottom: 12px; color: #ddd; transition: color 0.2s; }
+        .tile:hover i { color: var(--primary-red); }
+        .tile .title { font-size: 0.9rem; font-weight: bold; color: #ccc; line-height: 1.2; }
+        
+        .sortable-ghost { opacity: 0.4; border: 2px dashed #666 !important; background: rgba(0,0,0,0.8) !important; }
+        
+        .tile.red-tile { background: rgba(200, 0, 0, 0.9); border: 1px solid var(--primary-dark); flex: 1; }
+        .tile.red-tile:hover { background: rgba(230, 0, 0, 1); border-color: #ff4d4d; }
+        .tile.red-tile i { font-size: 3.5rem; color: #fff; margin-bottom: 15px;}
+        .tile.red-tile .title { font-size: 1.1rem; color: white; }
+        
+        .tile.add-tile { border: 2px dashed rgba(255,255,255,0.3); background: transparent; }
+        .tile.add-tile i { color: rgba(255,255,255,0.5); font-size: 2.5rem; margin: 0; }
+        .tile.add-tile:hover { border-color: var(--primary-red); }
+        .tile.add-tile:hover i { color: var(--primary-red); }
+        .badge { position: absolute; top: -6px; right: -6px; background: var(--primary-red); color: white; border-radius: 4px; padding: 3px 6px; min-width: 20px; font-size: 0.8rem; font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+
+        .modal-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: var(--bg-color); z-index: 1000000; flex-direction: column; }
+        .detail-header {
+            background: rgba(15, 15, 15, 1); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; border-bottom: 1px solid var(--border-color); z-index: 20; flex-shrink: 0;
+        }
+        .btn-back { background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; width: 38px; height: 38px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: 0.2s;}
+        .btn-back:hover { background: var(--primary-red); border-color: var(--primary-red); }
+        .detail-content { flex: 1; padding: 20px; overflow-y: auto; color: #fff; background: transparent; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
+
+        .flipbook-container { display: flex; flex-direction: column; width: 100%; height: 100%; background: #0a0a0a; position: relative; overflow: hidden; }
+        .flipbook-toolbar { width: 100%; background: #1a1a1a; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-red); z-index: 10; box-sizing: border-box; flex-shrink: 0;}
+        .flipbook-toolbar button { background: var(--primary-red); border: none; color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .flipbook-toolbar button:disabled { background: #333; color: #777; cursor: not-allowed; }
+        .flipbook-page-info { color: #fff; font-weight: bold; font-size: 0.95rem; }
+        .flipbook-viewport { flex: 1; width: 100%; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; perspective: 1500px; background: #050505; }
+        
+        .flipbook-canvas-wrapper { 
+            position: relative; box-shadow: inset -5px 0 15px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.8); transform-style: preserve-3d; background: linear-gradient(to right, #f4f4f4 0%, #ffffff 5%); border-radius: 2px 8px 8px 2px; overflow: hidden; will-change: transform;
+        }
+        .flipbook-canvas-wrapper::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 15px; background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%); z-index: 5; pointer-events: none; }
+        .flipbook-canvas-wrapper.flip-next { animation: flipNextAnim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; transform-origin: left center; }
+        .flipbook-canvas-wrapper.flip-prev { animation: flipPrevAnim 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; transform-origin: left center; }
+        @keyframes flipNextAnim { 0% { transform: rotateY(0deg); opacity: 1; } 50% { transform: rotateY(-90deg); opacity: 0.6; } 51% { transform: rotateY(90deg); opacity: 0.2; } 100% { transform: rotateY(0deg); opacity: 1; } }
+        @keyframes flipPrevAnim { 0% { transform: rotateY(0deg); opacity: 1; } 50% { transform: rotateY(90deg); opacity: 0.6; } 51% { transform: rotateY(-90deg); opacity: 0.2; } 100% { transform: rotateY(0deg); opacity: 1; } }
+        #fb-canvas { max-width: 100%; max-height: 100%; display: block; position: relative; z-index: 1;}
+
+        .admin-layout { display: flex; flex: 1; overflow: hidden; background: transparent; }
+        .admin-tabs-side { width: 220px; background: rgba(15, 15, 15, 1); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        .admin-tab { padding: 16px 20px; color: var(--text-muted); cursor: pointer; border-left: 4px solid transparent; font-weight: bold; font-size: 1.05rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; transition: 0.15s; }
+        .admin-tab:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .admin-tab.active { background: rgba(230,0,0,0.1); color: var(--primary-red); border-left-color: var(--primary-red); }
+        .admin-content-side { flex: 1; padding: 20px; overflow-y: auto; overflow-x: hidden; background: transparent; -webkit-overflow-scrolling: touch;}
+        .admin-section { display: none; animation: fadeIn 0.3s ease; }
+        .admin-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .content-box { background: rgba(20, 20, 20, 1); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .content-box h3 { margin-top: 0; color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;}
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-grid.full { grid-template-columns: 1fr; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; text-align: left; }
+        .form-group label { font-size: 0.95rem; font-weight: bold; color: #ccc; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background: rgba(0,0,0,0.8); color: #fff; font-family: inherit; font-size: 1rem; transition: 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--primary-red); background: #000; box-shadow: 0 0 5px rgba(230,0,0,0.3); }
+        .btn-primary { background: var(--primary-red); color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-success { background: #10b981; }
+
+        .table-responsive { width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(10,10,10,1); -webkit-overflow-scrolling: touch; }
+        .data-table { width: 100%; min-width: 900px; border-collapse: collapse; color: #e0e0e0; }
+        .data-table th, .data-table td { border-bottom: 1px solid var(--border-color); padding: 12px 15px; text-align: left; font-size: 0.95rem; vertical-align: middle; }
+        .data-table th { background-color: rgba(20,20,20,1); color: #fff; font-weight: bold; }
+        .data-table tr:hover { background: rgba(255,255,255,0.05); }
+        .action-cell { display: flex; gap: 5px; }
+        .action-btn { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 0.9rem; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.9); }
+        .btn-edit { background: #3b82f6; } .btn-delete { background: var(--primary-red); }
+
+        #customDialogOverlay, #loadingOverlay, #appFormContainer {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.9); z-index: 9999999; justify-content: center; align-items: center;
+        }
+        #appFormContainer { z-index: 3500000; padding: 15px; }
+        .custom-dialog-box { background: rgba(20, 20, 20, 1); border: 1px solid var(--border-color); border-top: 4px solid var(--primary-red); border-radius: 8px; padding: 25px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9); animation: zoomIn 0.2s ease; }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0;} to { transform: scale(1); opacity: 1;} }
+        #appFormContainer .content-box { width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; border-top: 4px solid var(--primary-red); margin: auto; animation: zoomIn 0.2s ease;}
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary-red); border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .profile-card { background: rgba(20, 20, 20, 1); border-radius: 12px; padding: 25px; margin: 20px auto; max-width: 450px; border: 1px solid var(--border-color); border-top: 4px solid var(--primary-red); text-align: center; animation: fadeIn 0.3s ease; }
+        .profile-info { text-align: left; margin-top: 20px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .profile-info p { margin: 12px 0; font-size: 1rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px; color: var(--text-muted);}
+        .profile-info p span { font-weight: bold; color: #fff; float: right; }
+
+        @media (max-width: 900px) { .dashboard-wrapper { flex-direction: column; } .left-pane { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; } }
+        @media (max-width: 768px) {
+            .admin-layout { flex-direction: column; } .admin-tabs-side { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; overflow-x: auto; white-space: nowrap; }
+            .admin-tab { border-left: none; border-bottom: 4px solid transparent; padding: 14px 20px; flex: 1; justify-content: center; } .admin-tab.active { border-bottom-color: var(--primary-red); }
+            .form-grid { grid-template-columns: 1fr; gap: 12px; } #dashboardScreen { padding: 15px; } .right-pane { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+            .tile { padding: 12px 8px; } .tile i { font-size: 2rem; margin-bottom: 8px; } .tile .title { font-size: 0.8rem; } .tile.red-tile { padding: 15px 10px; } .tile.red-tile i { font-size: 2.8rem; }
+        }
+
+        .btn-glowing-open { background: var(--primary-red); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .icon-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; }
+        .icon-item { display: flex; align-items: center; justify-content: center; height: 45px; border-radius: 6px; background: rgba(255,255,255,0.05); cursor: pointer; font-size: 1.3rem; color: var(--text-muted); transition: 0.2s;}
+        .icon-item:hover, .icon-item.selected { background: var(--primary-red); color: #fff; transform: scale(1.1); }
+
+        #adminContextMenu { display: none; position: fixed; background: rgba(20,20,20,0.98); border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 0; z-index: 4000000; min-width: 240px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); animation: fadeIn 0.1s ease; }
+        .context-menu-item { padding: 10px 18px; cursor: pointer; color: #fff; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
+        .context-menu-item:hover { background: rgba(255,255,255,0.1); color: var(--primary-red); }
+
+        .status-active { color: #10b981; font-weight: bold; } .status-expired { color: var(--primary-red); font-weight: bold; }
+        
+        .chat-bubble { max-width: 80%; padding: 12px 18px; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; word-wrap: break-word; animation: fadeIn 0.3s ease; }
+        .chat-sent { align-self: flex-end; background: var(--primary-dark); border-bottom-right-radius: 0; }
+        .chat-recv { align-self: flex-start; background: #262626; border-bottom-left-radius: 0;}
+        .chat-input-area { background: rgba(20,20,20,1); padding: 15px 20px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); }
+        .chat-input-area input { flex: 1; margin: 0; }
+
+        .html-preview-split { display: flex; flex: 1; overflow: hidden; flex-direction: row; padding: 15px; gap: 15px; }
+        @media (max-width: 768px) { .html-preview-split { flex-direction: column; overflow-y: auto; } }
+
+        /* IMMERSIVE MODE CSS (Auto-Hide Header Khusus Web & Media) */
+        #detailScreen.immersive-mode .detail-header {
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
+            transform: translateY(-100%); box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            transition: transform 0.15s ease-out; /* Dibuat lebih cepat (0.15s) untuk respons instan */
+        }
+        #detailScreen.immersive-mode .detail-header.visible {
+            transform: translateY(0);
+        }
+        #detailScreen.immersive-mode .detail-content {
+            height: 100vh; height: 100dvh; padding: 0 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-animated"></div>
+<div class="bg-grid"></div>
+
+<div id="BloggerAppContainer">
+    
+    <div id="welcomeScreen">
+        <div class="logo-container">
+            <img src="URL_GAMBAR_DR_MESIN_DI_BLOGGER_ANDA" onerror="this.src='https://via.placeholder.com/600x300/111/e60000?text=Dr.Mesin+Denpasar'" alt="Dr. Mesin" class="welcome-logo">
+        </div>
+        <div class="loading-text">SYSTEM INITIALIZATION <i class="fas fa-circle-notch fa-spin"></i></div>
+    </div>
+
+    <div class="app-header" id="mainHeader" style="display: none;">
+        <div class="header-left">
+            <i class="fas fa-microchip"></i>
+            <div>
+                <b id="displayHeaderModel">X-431 PAD9 LINK</b><br>
+                <span id="displayHeaderSN" style="font-size: 0.8rem; color: var(--text-muted);">S.N:98760000003 V8.00.027</span>
+            </div>
+        </div>
+        <div class="header-logo" id="displayHeaderLogo">Dr.<span>Mesin</span></div>
+        <div class="header-right">
+            <div class="translate-wrapper" title="Translate Application">
+                <i class="fas fa-globe"></i>
+                <div id="google_translate_element"></div>
+            </div>
+            <button class="btn-chat-header" id="btnAdminHeader" onclick="openAdminPanel()" title="Admin Panel" style="display: none; margin-right:5px;"><i class="fas fa-cog"></i></button>
+            <button class="btn-chat-header" onclick="openChatScreen()" title="Secure Comms"><i class="fas fa-comment-dots"></i></button>
+            <button class="btn-profile" onclick="openProfile()" title="Status Member"><i class="fas fa-user-astronaut"></i> <span id="headerUserText">User</span></button>
+            <button class="btn-logout" onclick="logout()" title="Logout"><i class="fas fa-power-off"></i></button>
+        </div>
+    </div>
+
+    <div id="loginScreen" class="center-screen" style="display: none;">
+        <div class="login-box" id="loginBox">
+            <div class="login-logo-container" onclick="revealLogin()" title="Tap to Initialize">
+                <div class="login-logo"><i class="fas fa-microchip"></i></div>
+                <div class="click-hint">TAP TO INITIALIZE</div>
+            </div>
+            <div class="login-form-wrap">
+                <h2>SECURE ACCESS</h2>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="System ID">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)">
+                </div>
+                <button class="btn-login" onclick="prosesLogin()"><i class="fas fa-sign-in-alt"></i> INITIALIZE LOGIN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expiredScreen" class="center-screen" style="display: none;">
+        <div class="login-box" style="border-color: var(--primary-red); display: block; max-height: unset; opacity: 1;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--primary-red); margin-bottom: 15px;"></i>
+            <h2 style="color: var(--primary-red);">ACCESS DENIED</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 5px;">Lisensi Anda (<b id="expiredUsername" style="color:#fff;">user</b>) telah kedaluwarsa.</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">Sistem mengunci akses. Silakan hubungi Administrator untuk memperpanjang lisensi Anda.</p>
+            <button class="btn-wa" onclick="contactAdminWA()"><i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> PERPANJANG LISENSI</button>
+            <button onclick="logout()" style="background:transparent; border:none; color:var(--text-muted); margin-top:15px; cursor:pointer; text-decoration:underline; font-size:0.95rem;">Kembali ke Login</button>
+        </div>
+    </div>
+
+    <div id="dashboardScreen">
+        <div class="dashboard-wrapper">
+            <div class="left-pane" id="leftPaneContainer"></div>
+            <div class="right-pane" id="rightPaneContainer"></div>
+        </div>
+    </div>
+
+    <div id="detailScreen" class="modal-screen">
+        <div class="detail-header">
+            <button class="btn-back" onclick="goBack()"><i class="fas fa-chevron-left"></i></button>
+            <div id="detailTitle" style="flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">Menu Title</div>
+            <button id="btnOpenOutside" class="btn-glowing-open" style="display: none;"><i class="fas fa-external-link-alt"></i> BUKA DI LUAR</button>
+        </div>
+        <div class="detail-content" id="detailContent"></div>
+    </div>
+
+    <div id="profileScreen" class="modal-screen">
+        <div class="detail-header">
+            <button class="btn-back" onclick="closeModal('profileScreen')"><i class="fas fa-times"></i></button>
+            <span>MEMBER IDENTITY</span>
+        </div>
+        <div class="detail-content">
+            <div class="profile-card">
+                <i class="fas fa-user-circle" style="font-size: 4rem; color: #666; margin-bottom: 15px;"></i>
+                <h2 id="profNama" style="margin:0; color:#fff; font-size:1.5rem;">Nama User</h2>
+                <div id="profRole" style="color:var(--primary-red); font-weight:bold; margin-bottom: 15px; font-size:1.1rem;">Role</div>
+                <div class="profile-info">
+                    <p>System ID <span><i class="fas fa-id-badge"></i> <span id="profUser">user</span></span></p>
+                    <p>Email <span><i class="fas fa-envelope"></i> <span id="profEmail">email</span></span></p>
+                    <p>Contact <span><i class="fas fa-phone-alt"></i> <span id="profPhone">phone</span></span></p>
+                    <p>Access Status <span><span id="profStatus">Status</span></span></p>
+                    <p>Valid Until <span><i class="fas fa-calendar-check"></i> <span id="profExpDate">Tanggal</span></span></p>
+                </div>
+                <div id="profTimerBadge" style="padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 15px; color: white;">Sisa Waktu: 0 Hari</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatScreen" class="modal-screen">
+        <div class="detail-header">
+            <button class="btn-back" onclick="closeModal('chatScreen')"><i class="fas fa-chevron-left"></i></button>
+            <span style="flex: 1;"><i class="fas fa-comment-dots" style="margin-right:8px; color:var(--primary-red);"></i> SECURE COMMS</span>
+        </div>
+        <div class="detail-content" id="chatContainerWrapper" style="padding: 20px; display: flex; flex-direction: column;">
+            <div id="chatMessages" style="display:flex; flex-direction:column;"></div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="form-control" placeholder="Ketik pesan..." onkeypress="handleChatEnter(event)">
+            <button class="btn-primary" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="adminScreen" class="modal-screen">
+        <div class="detail-header">
+            <button class="btn-back" onclick="closeModal('adminScreen')"><i class="fas fa-times"></i></button>
+            <span>SYSTEM CONFIGURATION</span>
+        </div>
+        <div class="admin-layout">
+            <div class="admin-tabs-side">
+                <div class="admin-tab active" onclick="switchAdminTab('users')"><i class="fas fa-users-cog"></i> Users Access</div>
+                <div class="admin-tab" onclick="switchAdminTab('apps')"><i class="fas fa-network-wired"></i> Modules Routing</div>
+                <div class="admin-tab" onclick="switchAdminTab('header')"><i class="fas fa-sliders-h"></i> Core Interface</div>
+            </div>
+            
+            <div class="admin-content-side">
+                <div id="admin-users" class="admin-section active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-users" style="color:var(--primary-red); margin-right:8px;"></i> Registered Personnel</h3>
+                        <button class="btn-primary btn-success" onclick="showUserForm()"><i class="fas fa-user-plus"></i> Add Member</button>
+                    </div>
+                    
+                    <div id="userFormContainer" class="content-box" style="display:none; max-width: 800px; margin-bottom: 20px;">
+                        <h4 id="userFormTitle" style="margin-top:0; color:#fff; font-size:1.2rem; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:15px;">Tambah Member Baru</h4>
+                        <input type="hidden" id="formUserId">
+                        <div class="form-grid">
+                            <div class="form-group"><label>System ID (Username)</label><input type="text" id="formUserUsername" class="form-control" placeholder="Ketik ID unik..."></div>
+                            <div class="form-group"><label>Access Key (Password)</label><input type="text" id="formUserPassword" class="form-control" placeholder="Ketik password..."></div>
+                            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="formUserNama" class="form-control" placeholder="Nama mekanik / admin..."></div>
+                            <div class="form-group"><label>Alamat Email</label><input type="email" id="formUserEmail" class="form-control" placeholder="Opsional..."></div>
+                            <div class="form-group"><label>Nomor Kontak / WA</label><input type="text" id="formUserPhone" class="form-control" placeholder="Misal: 62812..."></div>
+                            <div class="form-group">
+                                <label>Hak Akses (Role)</label>
+                                <select id="formUserRole" class="form-control">
+                                    <option value="Mekanik">Technician (User Biasa)</option>
+                                    <option value="PRO">Member PRO</option>
+                                    <option value="ULTIMATE">Member ULTIMATE</option>
+                                    <option value="Admin">System Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-grid full"><div class="form-group"><label>Tanggal Lisensi Berakhir (Exp Date)</label><input type="date" id="formUserExp" class="form-control"></div></div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> Save Data</button>
+                            <button class="btn-primary" style="background:rgba(255,255,255,0.1);" onclick="document.getElementById('userFormContainer').style.display='none'">Cancel</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>ID / Username</th><th>Nama Lengkap</th><th>Email</th><th>Contact</th><th>Role</th><th>Exp Date</th><th>Status</th><th style="text-align:center;">Action</th></tr></thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="admin-apps" class="admin-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-sitemap" style="color:var(--primary-red); margin-right:8px;"></i> System Modules Routing</h3>
+                        <button class="btn-primary btn-success" onclick="showAppForm()"><i class="fas fa-folder-plus"></i> New Node</button>
+                    </div>
+                    
+                    <div style="display:flex; gap:15px; margin-bottom:20px; align-items:center; background:rgba(0,0,0,0.5); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
+                        <i class="fas fa-filter" style="color:var(--primary-red); font-size:1.2rem;"></i>
+                        <span style="font-weight:bold; color:var(--text-muted); font-size:1rem;">Klasifikasi Folder:</span>
+                        <select id="adminAppFilter" class="form-control" style="flex:1; min-width: 250px;" onchange="renderAdminAppTable()">
+                            <option value="ALL">-- TAMPILKAN SEMUA DATA --</option>
+                            <option value="ROOT">-- HANYA MENU UTAMA (ROOT) --</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>Hierarchy (Lokasi)</th><th>Icon</th><th>Module Name</th><th>Type / Action</th><th style="text-align:center;">Action</th></tr></thead>
+                            <tbody id="appTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="admin-header" class="admin-section">
+                    <div style="max-width: 800px;">
+                        <h3 style="margin-top:0; color:#fff; font-size:1.3rem; margin-bottom:20px;"><i class="fas fa-sliders-h" style="color:var(--primary-red); margin-right:8px;"></i> Core Interface Settings</h3>
+                        <div class="content-box">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Main Logo Text</label><input type="text" id="formHeaderLogo" class="form-control" placeholder="e.g. Dr.Mesin"></div>
+                                <div class="form-group"><label>Device Model Identifier</label><input type="text" id="formHeaderModel" class="form-control" placeholder="e.g. X-431 PAD9 LINK"></div>
+                                <div class="form-group"><label>Hardware S.N & Firmware</label><input type="text" id="formHeaderSN" class="form-control" placeholder="e.g. S.N:98760000003 V8.00.027"></div>
+                                <div class="form-group"><label>Nomor WhatsApp Admin</label><input type="text" id="formHeaderWA" class="form-control" placeholder="e.g. 62812... (Tanpa +)"></div>
+                            </div>
+                            <div style="background: rgba(230,0,0,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-red); margin-top: 15px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label style="color:#fff;"><i class="fas fa-bullhorn" style="color:var(--primary-red); margin-right:6px;"></i> Pemberitahuan Sistem (Popup saat Login)</label>
+                                    <textarea id="formHeaderNotif" class="form-control" placeholder="Ketik pengumuman di sini... (Kosongkan jika tidak ada)" rows="4" style="margin-bottom:0;"></textarea>
+                                </div>
+                            </div>
+                            <button class="btn-primary" style="margin-top:20px; width:100%; padding:12px;" onclick="saveHeaderConfig()"><i class="fas fa-sync"></i> Sync Configuration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appFormContainer">
+        <div class="content-box">
+            <h4 id="appFormTitle" style="margin-top:0; color:#fff; font-size:1.3rem; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:20px;">Create New Node</h4>
+            <input type="hidden" id="formAppId">
+            
+            <div class="form-grid">
+                <div class="form-group"><label>Module Name (Judul)</label><input type="text" id="formAppTitle" class="form-control" placeholder="e.g. REPAIR MANUAL..."></div>
+                <div class="form-group"><label>Notification Badge (Label)</label><input type="text" id="formAppBadge" class="form-control" placeholder="e.g. HOT, NEW, atau 145"></div>
+                <div class="form-group"><label>Parent Node (Lokasi Folder)</label><select id="formAppParent" class="form-control" onchange="toggleContentType()"><option value="">-- ROOT DASHBOARD --</option></select></div>
+                <div class="form-group" id="typeGroup"><label>Visual Style (Khusus Root)</label><select id="formAppType" class="form-control"><option value="small-dark">Standard Grid (Right Pane)</option><option value="large-red">Primary Action (Left Pane)</option></select></div>
+                <div class="form-group">
+                    <label>Module Type / Action</label>
+                    <select id="formAppContentType" class="form-control" onchange="toggleContentType()">
+                        <option value="folder">DIRECTORY (Contains sub-modules)</option>
+                        <option value="image">GAMBAR / FOTO (GDrive/URL)</option>
+                        <option value="pdf">DOCUMENT VIEWER (PDF/DOC/PPT)</option>
+                        <option value="mp4">MEDIA PLAYER (MP4 URL)</option>
+                        <option value="web">WEB BROWSER (External URL)</option>
+                        <option value="html">CUSTOM SCRIPT (HTML/Text)</option>
+                        <option value="teamviewer">TEAMVIEWER (Remote Support)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Manual Icon Class</label><input type="text" id="formAppIcon" class="form-control" placeholder="e.g. fa-car"></div>
+            </div>
+
+            <div class="form-grid full"><div class="form-group" style="margin-bottom: 5px;"><label>Pilih Ikon Cepat (Klik salah satu):</label><div class="icon-selector" id="iconGrid"></div></div></div>
+            <div class="form-grid full" id="urlInputGroup" style="display:none;"><div class="form-group"><label>Target Source URL (Google Drive / Link Luar)</label><input type="text" id="formAppUrl" class="form-control" placeholder="https://..."></div></div>
+            <div class="form-grid full" id="htmlInputGroup" style="display:none;">
+                <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label style="margin:0;">Custom HTML Payload</label>
+                        <button type="button" onclick="openPreviewFromForm()" style="background:var(--primary-dark); color:#fff; border:none; border-radius:4px; padding:4px 12px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-external-link-alt"></i> Buka Editor & Pratinjau</button>
+                    </div>
+                    <textarea id="formAppContent" class="form-control" placeholder="Inject HTML here..." rows="5"></textarea>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:5px;">
+                <button class="btn-primary" onclick="saveApp()"><i class="fas fa-save"></i> Save Module</button>
+                <button class="btn-primary" style="background:rgba(255,255,255,0.1);" onclick="document.getElementById('appFormContainer').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminContextMenu">
+        <div class="context-menu-item" id="ctxAdd" onclick="quickCreateNode()"><i class="fas fa-folder-plus"></i> Create New Node Here</div>
+        <div class="context-menu-item" id="ctxEdit" onclick="quickEditNode()" style="display:none; border-top:1px solid var(--border-color);"><i class="fas fa-edit"></i> Edit Node / Rename</div>
+        <div class="context-menu-item" id="ctxDel" onclick="quickDeleteNode()" style="display:none; color:var(--primary-red);"><i class="fas fa-trash"></i> Delete Node</div>
+        
+        <div class="context-menu-item" id="ctxAccessPub" onclick="setNodeAccess('')" style="display:none; border-top:1px solid var(--border-color);"></div>
+        <div class="context-menu-item" id="ctxAccessPro" onclick="setNodeAccess('PRO')" style="display:none;"></div>
+        <div class="context-menu-item" id="ctxAccessUlt" onclick="setNodeAccess('ULTIMATE')" style="display:none;"></div>
+        
+        <div class="context-menu-item" onclick="closeContextMenu()" style="border-top:1px solid var(--border-color);"><i class="fas fa-times"></i> Cancel</div>
+    </div>
+
+    <div id="customDialogOverlay">
+        <div class="custom-dialog-box">
+            <i id="dialogIcon" class="fas fa-exclamation-triangle" style="font-size:3.5rem; margin-bottom:15px;"></i>
+            <h3 id="dialogTitle" style="margin:0 0 10px 0; color:#fff; font-size:1.3rem;">Notification</h3>
+            <p id="dialogMessage" style="color:#ccc; font-size:1rem; margin-bottom:25px; line-height:1.5;"></p>
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <button id="btnDialogCancel" class="btn-primary" style="background:rgba(255,255,255,0.1); display:none; flex:1;">BATAL</button>
+                <button id="btnDialogOk" class="btn-primary" style="flex:1;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay">
+        <div><div class="spinner"></div><p style="margin-top: 15px; font-weight: bold; color: var(--primary-red); letter-spacing: 2px;">PROCESSING...</p></div>
+    </div>
+
+    <div id="htmlPreviewerModal" class="modal-screen" style="z-index: 9999999; background: rgba(10,10,10,0.98);">
+        <div class="detail-header" style="justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-laptop-code" style="color:var(--primary-red);"></i> <span>LIVE HTML PREVIEWER</span>
+            </div>
+            <button class="btn-back" onclick="document.getElementById('htmlPreviewerModal').style.display='none'"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="html-preview-split">
+            <div style="flex:1; display:flex; flex-direction:column; min-height:300px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <label style="color:#fff; font-weight:bold;"><i class="fas fa-code"></i> Source Code</label>
+                    <button onclick="applyPreviewToForm()" id="btnApplyPreview" style="display:none; background:#10b981; color:#fff; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.85rem; font-weight:bold;"><i class="fas fa-check"></i> Terapkan ke Form</button>
+                </div>
+                <textarea id="liveHtmlEditor" class="form-control" style="flex:1; font-family:monospace; resize:none; font-size:14px; background:#111; border:1px solid #333; color:#0f0; padding:15px;" placeholder="Ketik atau paste kode HTML / CSS / JS di sini..."></textarea>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; min-height:300px;">
+                <label style="color:#fff; margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-eye"></i> Live Result 
+                    <button onclick="runLivePreview()" style="background:var(--primary-red); color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-size:0.8rem;"><i class="fas fa-play"></i> RUN</button>
+                </label>
+                <div style="flex:1; background:#fff; border-radius:6px; overflow:hidden; border:1px solid #333; position:relative;">
+                    <iframe id="liveHtmlFrame" style="width:100%; height:100%; border:none; background:#fff;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const IS_PREVIEW = false; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxiyQ9olvJ7Aou2hsX0TfexvN12KsqD3DdMkGe5e-_iBrCs2m2eqtGpGOy7_C4rYTjc/exec"; 
+
+let currentUser = null;
+let menuStack = []; 
+let isDraggingTile = false; 
+
+let appsData = []; let usersData = []; let headerConfig = {}; let chatMessagesDummy = [{ sender: 'drmesin03', name: 'Admin Bengkel', text: 'Sistem komunikasi online aktif.', time: '08:00' }];
+
+let appDictionary = {}; 
+function updateAppDictionary() {
+    appDictionary = {};
+    for (let i = 0, len = appsData.length; i < len; i++) {
+        appDictionary[appsData[i].id] = appsData[i];
+    }
+}
+
+function canAccess(app) {
+    if(!currentUser) return false;
+    if(currentUser.role === 'Admin') return true;
+    
+    let reqAccess = (app.type && app.type.includes('_')) ? app.type.split('_')[1] : '';
+    if(!reqAccess) return true; 
+
+    if(reqAccess === 'PRO' && (currentUser.role === 'PRO' || currentUser.role === 'ULTIMATE')) return true;
+    if(reqAccess === 'ULTIMATE' && currentUser.role === 'ULTIMATE') return true;
+    
+    return false;
+}
+
+let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
+
+function initHTML5Flipbook(app) {
+    let rawUrl = app.content.trim(); let pdfUrl = rawUrl;
+    if (rawUrl.includes('drive.google.com')) {
+        const driveIdMatch = rawUrl.match(/(?:id=|d\/)([\w-]{25,})/i);
+        if (driveIdMatch && driveIdMatch[1]) { pdfUrl = `https://corsproxy.io/?${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveIdMatch[1]}`)}`; }
+    } else { if (!pdfUrl.includes('corsproxy.io')) { pdfUrl = `https://corsproxy.io/?${encodeURIComponent(pdfUrl)}`; } }
+
+    if (typeof pdfjsLib === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+        script.onload = () => {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            loadPdfDocument(pdfUrl, app, rawUrl);
+        };
+        document.head.appendChild(script);
+    } else {
+        loadPdfDocument(pdfUrl, app, rawUrl);
+    }
+}
+
+function loadPdfDocument(url, app, rawUrl) {
+    pdfjsLib.getDocument(url).promise.then(pdf => {
+        flipbookState.pdfDoc = pdf; flipbookState.pageNum = 1;
+        renderFlipbookUI(app, rawUrl);
+    }).catch(err => {
+        console.warn("Flipbook Error/CORS. Fallback to Secure Iframe.", err);
+        renderSecureIframeFallback(app, rawUrl);
+    });
+}
+
+function handleSwipeStart(e) { flipbookState.touchStartX = e.changedTouches[0].screenX; }
+function handleSwipeEnd(e) {
+    let touchEndX = e.changedTouches[0].screenX;
+    if (touchEndX < flipbookState.touchStartX - 50) flipPage(1); 
+    if (touchEndX > flipbookState.touchStartX + 50) flipPage(-1); 
+}
+
+function renderFlipbookUI(app, rawUrl) {
+    const container = document.getElementById(`pdf-container-${app.id}`);
+    if(!container) return;
+
+    container.innerHTML = `
+        <div class="flipbook-toolbar">
+            <button id="fb-prev" onclick="flipPage(-1)"><i class="fas fa-chevron-left"></i> PREV</button>
+            <div class="flipbook-page-info">HALAMAN <span id="fb-page-num">1</span> DARI <span id="fb-page-count">${flipbookState.pdfDoc.numPages}</span></div>
+            <button id="fb-next" onclick="flipPage(1)">NEXT <i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="flipbook-viewport" id="fb-viewport">
+            <div class="flipbook-canvas-wrapper" id="fb-wrapper">
+                <canvas id="fb-canvas"></canvas>
+            </div>
+        </div>
+    `;
+
+    flipbookState.canvas = document.getElementById('fb-canvas');
+    flipbookState.ctx = flipbookState.canvas.getContext('2d', { alpha: false }); 
+    flipbookState.wrapper = document.getElementById('fb-wrapper');
+    
+    const viewport = document.getElementById('fb-viewport');
+    viewport.removeEventListener('touchstart', handleSwipeStart);
+    viewport.removeEventListener('touchend', handleSwipeEnd);
+    
+    viewport.addEventListener('touchstart', handleSwipeStart, {passive: true});
+    viewport.addEventListener('touchend', handleSwipeEnd, {passive: true});
+
+    renderFlipbookPage(flipbookState.pageNum);
+}
+
+function renderFlipbookPage(num, direction = 0) {
+    flipbookState.isRendering = true;
+    
+    flipbookState.pdfDoc.getPage(num).then(page => {
+        const viewportEl = document.getElementById('fb-viewport');
+        const unscaledViewport = page.getViewport({scale: 1});
+        const scale = Math.min((viewportEl.clientWidth - 20) / unscaledViewport.width, (viewportEl.clientHeight - 20) / unscaledViewport.height) * 1.5; 
+        const viewport = page.getViewport({scale: scale});
+        
+        flipbookState.canvas.height = viewport.height; flipbookState.canvas.width = viewport.width;
+        flipbookState.canvas.style.width = '100%'; flipbookState.canvas.style.height = '100%'; flipbookState.canvas.style.objectFit = 'contain';
+
+        if (direction !== 0) {
+            flipbookState.wrapper.classList.remove('flip-next', 'flip-prev');
+            void flipbookState.wrapper.offsetWidth;
+            flipbookState.wrapper.classList.add(direction > 0 ? 'flip-next' : 'flip-prev');
+        }
+
+        page.render({ canvasContext: flipbookState.ctx, viewport: viewport }).promise.then(() => {
+            flipbookState.isRendering = false;
+            if (flipbookState.pageNumPending !== null) { renderFlipbookPage(flipbookState.pageNumPending); flipbookState.pageNumPending = null; }
+        });
+
+        document.getElementById('fb-page-num').textContent = num;
+        document.getElementById('fb-prev').disabled = num <= 1;
+        document.getElementById('fb-next').disabled = num >= flipbookState.pdfDoc.numPages;
+    });
+}
+
+function flipPage(dir) {
+    if (flipbookState.isRendering) { flipbookState.pageNumPending = flipbookState.pageNum + dir; return; }
+    let newPage = flipbookState.pageNum + dir;
+    if (newPage >= 1 && newPage <= flipbookState.pdfDoc.numPages) { flipbookState.pageNum = newPage; renderFlipbookPage(newPage, dir); }
+}
+
+function renderSecureIframeFallback(app, rawUrl) {
+    const container = document.getElementById(`pdf-container-${app.id}`);
+    if(!container) return;
+
+    let safePdfUrl = rawUrl; let isGoogleViewer = false; let isMSViewer = false;
+    
+    if(rawUrl.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)(\?|$)/)) {
+         safePdfUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`; isMSViewer = true;
+    } else if (safePdfUrl.includes('drive.google.com/file/d/')) {
+        safePdfUrl = safePdfUrl.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview');
+        if (!safePdfUrl.includes('/preview')) safePdfUrl += '/preview'; isGoogleViewer = true;
+    } else if (!safePdfUrl.includes('docs.google.com') && !safePdfUrl.includes('drive.google.com')) {
+        safePdfUrl = `https://docs.google.com/gview?url=${encodeURIComponent(safePdfUrl)}&embedded=true`; isGoogleViewer = true;
+    }
+    
+    if (!isGoogleViewer && !isMSViewer && !safePdfUrl.includes('#')) safePdfUrl += '#toolbar=0&navpanes=0';
+    let iframeStyle = isGoogleViewer ? "width:100%; height:calc(100% + 56px); margin-top:-56px; border:none;" : "width:100%; height:100%; border:none;";
+    
+    container.innerHTML = `
+        <div style="position:absolute; top:0; right:0; width:100px; height:80px; z-index:10; background:transparent;"></div>
+        <div style="width:100%; height:100%; overflow:hidden; background:#fff; transform: translateZ(0);">
+            <iframe loading="lazy" src="${safePdfUrl}" style="${iframeStyle}" scrolling="yes"></iframe>
+        </div>
+    `;
+}
+
+const fetchWithTimeout = async (resource, options = {}) => {
+    const { timeout = 15000 } = options;
+    const controller = new AbortController(); const id = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(resource, { ...options, signal: controller.signal });
+    clearTimeout(id); return response;
+};
+
+async function apiRequest(action, payload) {
+    if (IS_PREVIEW) return { success: false, message: "Preview mode disabled."};
+    if (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "") return { success: false, message: "URL Database GAS belum dipasang pada script!" };
+    
+    try {
+        const response = await fetchWithTimeout(GAS_URL, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: action, data: payload }), redirect: 'follow', timeout: 15000 
+        });
+        const responseText = await response.text();
+        try { return JSON.parse(responseText); } catch (jsonErr) { return { success: false, message: "Akses Ditolak Server Google." }; }
+    } catch (error) { 
+        return { success: false, message: error.name === 'AbortError' ? "Koneksi lambat (Timeout). Silakan coba lagi." : "Koneksi terputus." }; 
+    }
+}
+
+let dialogCallback = null;
+
+function showCustomAlert(message, title = "System Notification", type = "alert") {
+    document.getElementById('dialogMessage').innerHTML = message.replace(/\n/g, '<br>');
+    document.getElementById('dialogTitle').innerText = title;
+    
+    const icon = document.getElementById('dialogIcon');
+    if(type === 'success') { icon.className = 'fas fa-check-circle'; icon.style.color = '#10b981'; }
+    else if(type === 'warning' || type === 'confirm') { icon.className = 'fas fa-exclamation-triangle'; icon.style.color = '#F57F17'; }
+    else if(type === 'info') { icon.className = 'fas fa-info-circle'; icon.style.color = '#3b82f6'; }
+    else { icon.className = 'fas fa-times-circle'; icon.style.color = '#ff2a2a'; }
+
+    document.getElementById('btnDialogCancel').style.display = (type === 'confirm') ? 'block' : 'none';
+    document.getElementById('customDialogOverlay').style.display = 'flex';
+}
+
+function appAlert(message, title = "Notifikasi", type = "alert") { showCustomAlert(message, title, type); }
+function appConfirm(message, callback) { dialogCallback = callback; showCustomAlert(message, "Konfirmasi Sistem", "confirm"); }
+
+function closeCustomDialog() { document.getElementById('customDialogOverlay').style.display = 'none'; }
+document.getElementById('btnDialogOk').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(true); dialogCallback = null; } };
+document.getElementById('btnDialogCancel').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(false); dialogCallback = null; } };
+
+const iconList = [
+    'fa-microchip', 'fa-network-wired', 'fa-wrench', 'fa-sync-alt', 'fa-database', 'fa-car', 'fa-oil-can', 'fa-car-crash',
+    'fa-file-pdf', 'fa-play-circle', 'fa-globe', 'fa-cogs', 'fa-user', 'fa-users', 'fa-laptop', 'fa-mobile-alt',
+    'fa-server', 'fa-cloud', 'fa-shield-alt', 'fa-lock', 'fa-key', 'fa-tools', 'fa-toolbox', 'fa-car-battery',
+    'fa-plug', 'fa-charging-station', 'fa-gas-pump', 'fa-tachometer-alt', 'fa-thermometer-half', 'fa-fan', 'fa-bolt', 'fa-lightbulb',
+    'fa-video', 'fa-camera', 'fa-images', 'fa-map-marker-alt', 'fa-route', 'fa-chart-line', 'fa-clipboard-list', 'fa-tasks',
+    'fa-calendar-alt', 'fa-clock', 'fa-calculator', 'fa-book', 'fa-folder', 'fa-save', 'fa-edit', 'fa-plus',
+    'fa-check', 'fa-exclamation-triangle', 'fa-info-circle', 'fa-search', 'fa-home', 'fa-satellite-dish', 'fa-wifi', 'fa-bluetooth',
+    'fa-power-off', 'fa-cog', 'fa-link', 'fa-qrcode', 'fa-comment-dots', 'fa-comments', 'fa-headset', 'fa-desktop', 'fa-laptop-house'
+];
+
+document.addEventListener("DOMContentLoaded", function() {
+    renderIconGrid(); 
+    setTimeout(() => {
+        const splash = document.getElementById('welcomeScreen');
+        if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => { splash.style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }, 300); 
+        }
+    }, 150);
+});
+
+function revealLogin() {
+    const loginBox = document.getElementById('loginBox');
+    if (!loginBox.classList.contains('active')) {
+        loginBox.classList.add('active');
+        setTimeout(() => document.getElementById('username').focus(), 400);
+    }
+}
+
+function handleLoginEnter(e) { if (e.key === 'Enter') { prosesLogin(); } }
+
+function applyHeaderConfig() {
+    let logoHtml = headerConfig.logoText || "Dr.Mesin";
+    if(logoHtml.toLowerCase().includes('mesin')) { logoHtml = logoHtml.replace(/mesin/i, "<span>$&</span>"); }
+    document.getElementById('displayHeaderLogo').innerHTML = logoHtml;
+    document.getElementById('displayHeaderModel').innerText = headerConfig.modelText || "SCANNER";
+    document.getElementById('displayHeaderSN').innerText = headerConfig.snText || "";
+}
+
+function getDaysRemaining(expDateStr) {
+    if(!expDateStr) return 0;
+    const exp = new Date(expDateStr); const today = new Date();
+    return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+}
+
+async function prosesLogin() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    
+    if(!user || !pass) return appAlert("System ID dan Password wajib diisi!", "Authentication Error", "error");
+    if(!IS_PREVIEW && (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "")) return appAlert("Sistem belum dihubungkan ke Database.", "Warning", "warning");
+
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    const data = await apiRequest('login', { user: user, pass: pass });
+    document.getElementById('loadingOverlay').style.display = 'none';
+    
+    if(data.success) {
+        if(getDaysRemaining(data.user.exp) < 0) {
+            document.getElementById('expiredUsername').innerText = data.user.username;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('expiredScreen').style.display = 'flex';
+            return;
+        }
+        
+        appsData = data.apps || [];
+        updateAppDictionary(); 
+        usersData = data.allUsers || [];
+        headerConfig = data.config || headerConfig;
+        
+        loginSuccess(data.user);
+    } else { 
+        appAlert("Akses Ditolak: " + data.message, "Security Alert", "error"); 
+    }
+}
+
+function contactAdminWA() {
+    let waNumber = headerConfig.adminWA || "6281238625051";
+    let uname = document.getElementById('expiredUsername').innerText;
+    let textMsg = `Halo Admin Dr.Mesin, Akses saya terputus. Saya ingin memperpanjang Lisensi DrCardata PRO untuk System ID: *${uname}*. Mohon panduannya.`;
+    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(textMsg)}`, '_blank');
+}
+
+function loginSuccess(userData) {
+    currentUser = userData;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('expiredScreen').style.display = 'none';
+    document.getElementById('mainHeader').style.display = 'flex';
+    document.getElementById('dashboardScreen').style.display = 'block';
+    document.getElementById('headerUserText').innerText = currentUser.username.toUpperCase();
+    
+    const btnAdmin = document.getElementById('btnAdminHeader');
+    if (btnAdmin) btnAdmin.style.display = (currentUser.role === 'Admin') ? 'flex' : 'none';
+    
+    applyHeaderConfig(); 
+    renderDynamicApps(); 
+
+    if (headerConfig.globalNotification && headerConfig.globalNotification.trim() !== '') {
+        setTimeout(() => { appAlert(headerConfig.globalNotification, "PENGUMUMAN SISTEM", "info"); }, 500);
+    }
+}
+
+function saveNewOrder(container) {
+    const tiles = container.querySelectorAll('.tile[data-id]');
+    const newOrderIds = Array.from(tiles).map(t => t.getAttribute('data-id'));
+    if (newOrderIds.length === 0) return;
+
+    let itemsToReorder = [];
+    newOrderIds.forEach(id => {
+        const item = appDictionary[id];
+        if (item) itemsToReorder.push(item);
+    });
+    
+    let newAppsData = appsData.filter(a => !newOrderIds.includes(a.id));
+    appsData = newAppsData.concat(itemsToReorder);
+    updateAppDictionary();
+    
+    apiRequest('sync_apps', appsData).catch(err => console.error("Gagal urut di background:", err));
+}
+
+function renderDynamicApps() {
+    const leftPane = document.getElementById('leftPaneContainer');
+    const rightPane = document.getElementById('rightPaneContainer');
+    if(!leftPane || !rightPane) return;
+    
+    let leftHtml = ''; let rightHtml = '';
+    
+    for(let i=0, len=appsData.length; i<len; i++) {
+        let app = appsData[i];
+        if(app.parentId) continue; 
+        
+        if(!canAccess(app)) continue;
+        
+        let accessIcon = '';
+        let reqAccess = (app.type && app.type.includes('_')) ? app.type.split('_')[1] : '';
+        if (currentUser && currentUser.role === 'Admin') {
+            if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+            if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+        }
+
+        let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
+        
+        if(baseType === 'large-red') {
+            leftHtml += `<div class="tile red-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}<i class="fas ${app.icon}"></i><div class="title">${app.title.replace('&', '&<br>')}</div></div>`;
+        } else {
+            const badgeHtml = app.badge ? `<div class="badge">${app.badge}</div>` : '';
+            rightHtml += `<div class="tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}${badgeHtml}<i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>`;
+        }
+    }
+
+    if(currentUser && currentUser.role === 'Admin') { rightHtml += `<div class="tile add-tile" onclick="openAdminPanel()"><i class="fas fa-plus"></i></div>`; }
+
+    leftPane.innerHTML = leftHtml;
+    rightPane.innerHTML = rightHtml;
+    
+    if(currentUser && currentUser.role === 'Admin') {
+        Sortable.create(rightPane, {
+            animation: 150, delay: 150, delayOnTouchOnly: true, filter: '.add-tile', ghostClass: 'sortable-ghost', fallbackOnBody: true,
+            onStart: function() { isDraggingTile = true; },
+            onEnd: function(evt) { setTimeout(() => isDraggingTile = false, 50); if(evt.oldIndex !== evt.newIndex) saveNewOrder(rightPane); }
+        });
+    }
+}
+
+function openMenu(appId) {
+    if (isDraggingTile) return; 
+    const app = appDictionary[appId];
+    if(!app) return;
+    menuStack.push(app);
+    renderCurrentMenuState();
+}
+
+function logout() {
+    appConfirm("Anda yakin ingin mengakhiri sesi dan keluar dari sistem?", function(agreed) {
+        if(agreed) {
+            currentUser = null; 
+            menuStack = [];
+            
+            document.getElementById('username').value = ''; 
+            document.getElementById('password').value = '';
+            document.getElementById('loginBox').classList.remove('active');
+            
+            ['detailScreen', 'adminScreen', 'profileScreen', 'dashboardScreen', 'mainHeader', 'chatScreen', 'expiredScreen', 'htmlPreviewerModal'].forEach(id => {
+                const el = document.getElementById(id); if(el) el.style.display='none';
+            });
+            
+            if(flipbookState.ctx) {
+                 flipbookState.ctx.clearRect(0, 0, flipbookState.canvas.width, flipbookState.canvas.height);
+                 flipbookState.pdfDoc = null; 
+            }
+            
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
+    });
+}
+
+function openProfile() {
+    if(!currentUser) return;
+    document.getElementById('dashboardScreen').style.display = 'none';
+    document.getElementById('profNama').innerText = currentUser.nama.toUpperCase();
+    document.getElementById('profRole').innerText = currentUser.role.toUpperCase();
+    document.getElementById('profUser').innerText = currentUser.username;
+    document.getElementById('profEmail').innerText = currentUser.email || '-';
+    document.getElementById('profPhone').innerText = currentUser.phone || '-';
+    document.getElementById('profExpDate').innerText = currentUser.exp;
+    
+    const sisaHari = getDaysRemaining(currentUser.exp);
+    const badge = document.getElementById('profTimerBadge');
+    const statusTxt = document.getElementById('profStatus');
+    
+    if(sisaHari >= 0) {
+        statusTxt.innerHTML = '<span style="color:#10b981;">ACTIVE</span>'; badge.style.background = '#10b981'; badge.innerText = `Remaining: ${sisaHari} Days`;
+    } else {
+        statusTxt.innerHTML = '<span style="color:#ff2a2a;">EXPIRED</span>'; badge.style.background = '#c62828'; badge.innerText = `License Expired!`;
+    }
+    document.getElementById('profileScreen').style.display = 'flex';
+}
+
+function openChatScreen() {
+    document.getElementById('dashboardScreen').style.display = 'none'; 
+    renderChatMessages();
+    document.getElementById('chatScreen').style.display = 'flex';
+}
+
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.getElementById('dashboardScreen').style.display = 'block'; 
+}
+
+function renderChatMessages() {
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = chatMessagesDummy.map(msg => {
+        const isMe = currentUser && msg.sender === currentUser.username;
+        const bubbleClass = isMe ? 'chat-sent' : 'chat-recv';
+        return `<div class="chat-bubble ${bubbleClass}"><div style="font-size:0.85em; font-weight:bold; margin-bottom:5px; color:#ddd;">${msg.name.toUpperCase()}</div><div>${msg.text}</div><div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.7;">${msg.time}</div></div>`;
+    }).join('');
+    const wrapper = document.getElementById('chatContainerWrapper'); wrapper.scrollTop = wrapper.scrollHeight;
+}
+function handleChatEnter(e) { if (e.key === 'Enter') sendChatMessage(); }
+function sendChatMessage() {
+    const input = document.getElementById('chatInput'); const text = input.value.trim();
+    if(!text || !currentUser) return;
+    const now = new Date(); const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    chatMessagesDummy.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
+    input.value = ''; renderChatMessages();
+}
+
+function goBack() {
+    if(menuStack.length > 0) {
+        menuStack.pop(); 
+        if(menuStack.length === 0) {
+            document.getElementById('detailScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block'; 
+            
+            if(flipbookState.ctx) {
+                 flipbookState.ctx.clearRect(0, 0, flipbookState.canvas.width, flipbookState.canvas.height);
+                 flipbookState.pdfDoc = null; 
+            }
+        } else {
+            renderCurrentMenuState();
+        }
+    }
+}
+
+function buildContentHtml(app) {
+    if (app.contentType === 'folder') {
+        let html = `<div id="folderGrid_${app.id}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:15px;">`;
+        let count = 0;
+        for(let i=0; i<appsData.length; i++){
+            let c = appsData[i];
+            if(c.parentId !== app.id) continue;
+            
+            if(!canAccess(c)) continue;
+            
+            count++;
+            
+            let accessIcon = '';
+            let reqAccess = (c.type && c.type.includes('_')) ? c.type.split('_')[1] : '';
+            if (currentUser && currentUser.role === 'Admin') {
+                if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+                if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+            }
+
+            const badgeHtml = c.badge ? `<div class="badge" style="top:-5px;right:-5px;">${c.badge}</div>` : '';
+            html += `<div class="tile" data-id="${c.id}" onclick="openMenu('${c.id}')">${accessIcon}${badgeHtml}<i class="fas ${c.icon}"></i><div class="title">${c.title}</div></div>`;
+        }
+        if(count === 0) return `<div class="content-box" style="text-align:center; color:var(--text-muted);"><i class="fas fa-folder-open" style="font-size:3rem; margin-bottom:15px; opacity:0.5;"></i><br>Directory empty or access denied.</div>`;
+        return html + `</div>`;
+    } else if (app.contentType === 'image') {
+        let rawUrl = app.content.trim(); let srcUrl = rawUrl; let isGDrive = false; let gDriveId = '';
+        if (rawUrl.includes('drive.google.com')) {
+            isGDrive = true; const driveIdMatch = rawUrl.match(/(?:id=|d\/)([\w-]{25,})/i);
+            if (driveIdMatch && driveIdMatch[1]) { gDriveId = driveIdMatch[1]; srcUrl = `https://drive.google.com/uc?export=view&id=${gDriveId}`; }
+        } else if (rawUrl.includes('dropbox.com')) { srcUrl = rawUrl.replace('dl=0', 'raw=1'); if(!srcUrl.includes('raw=1')) srcUrl += (srcUrl.includes('?') ? '&raw=1' : '?raw=1'); }
+
+        let fallbackScript = "";
+        if (isGDrive && gDriveId) {
+            let iframeUrl = `https://drive.google.com/file/d/${gDriveId}/preview`;
+            fallbackScript = `document.getElementById('img_cont_${app.id}').innerHTML = '<div style=\\'position:absolute; top:0; right:0; width:100px; height:80px; z-index:10; background:transparent;\\'></div><iframe loading=\\'lazy\\' src=\\'${iframeUrl}\\' style=\\'width:100%; height:100%; border:none; border-radius:0;\\'></iframe>';`;
+        } else {
+            fallbackScript = `this.onerror=null; this.src='https://placehold.co/600x400/111/ff2a2a?text=Gambar+Gagal+Dimuat'; appAlert('Sistem gagal memuat gambar.\\n\\nPastikan URL valid.', 'Image Error', 'error');`;
+        }
+        return `<div id="img_cont_${app.id}" style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:#000; overflow:hidden; transform: translateZ(0);">
+            <img loading="lazy" src="${srcUrl}" style="max-width:100%; max-height:100%; object-fit:contain;" alt="${app.title}" oncontextmenu="return false;" onerror="${fallbackScript}">
+        </div>`;
+    } else if (app.contentType === 'pdf') {
+        return `<div id="pdf-container-${app.id}" class="flipbook-container" style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%;" oncontextmenu="return false;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                <div class="spinner"></div><p style="color:var(--primary-red); margin-top:15px; font-weight:bold; letter-spacing:1px;">LOADING DOCUMENT...</p>
+            </div>
+        </div>`;
+    } else if (app.contentType === 'web') {
+        let safeWebUrl = app.content.trim(); if (!/^https?:\/\//i.test(safeWebUrl)) safeWebUrl = 'https://' + safeWebUrl;
+        // LAYOUT EDGE-TO-EDGE FULL VIEW DENGAN KUNCI ABSOLUTE AGAR TIDAK TERPOTONG
+        return `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; overflow:hidden; transform: translateZ(0);">
+            <iframe loading="lazy" id="webview-${app.id}" src="${safeWebUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write" style="flex:1; width:100%; height:100%; border:none; background:transparent;"></iframe>
+        </div>`;
+    } else if (app.contentType === 'mp4') {
+        let rawUrl = app.content.trim(); let videoHtml = '';
+        const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([\w-]{11})/i);
+        if (ytMatch && ytMatch[1]) {
+            // LAYOUT FULL VIEW VIDEO YOUTUBE DENGAN PROTEKSI GANDA (OVERLAY + SANDBOX)
+            videoHtml = `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:#000; transform: translateZ(0);" oncontextmenu="return false;">
+                <!-- Pelindung klik: Atas (Judul & Share), Kanan Bawah (Logo YT), dan Kiri Bawah di atas control bar (Tonton di YouTube) -->
+                <div style="position:absolute; top:0; left:0; width:100%; height:80px; z-index:10; background:transparent; cursor:default;"></div>
+                <div style="position:absolute; bottom:0; right:0; width:120px; height:60px; z-index:10; background:transparent; cursor:default;"></div>
+                <div style="position:absolute; bottom:40px; left:0; width:220px; height:80px; z-index:10; background:transparent; cursor:default;"></div>
+                
+                <!-- Iframe ditambahkan 'sandbox' tanpa 'allow-popups' untuk memblokir paksa link keluar -->
+                <iframe loading="lazy" src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&modestbranding=1&playsinline=1&fs=1&iv_load_policy=3" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:1;" sandbox="allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>`;
+        } else if (rawUrl.includes('drive.google.com/file/d/')) {
+            let safeUrl = rawUrl.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview'); if (!safeUrl.includes('/preview')) safeUrl += '/preview';
+            videoHtml = `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; overflow:hidden; background:#000; transform: translateZ(0);" oncontextmenu="return false;"><div style="position:absolute; top:0; right:0; width:80px; height:60px; z-index:10; background:transparent;"></div><iframe loading="lazy" src="${safeUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:1;" allowfullscreen></iframe></div>`;
+        } else {
+            videoHtml = `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:#000;"><video preload="metadata" controls controlsList="nodownload noplaybackrate" disablePictureInPicture oncontextmenu="return false;" style="max-width:100%; max-height:100%;"><source src="${rawUrl}"></video></div>`;
+        }
+        return videoHtml;
+    } else if (app.contentType === 'teamviewer') {
+        return `<div class="content-box" style="text-align:center; padding:30px 20px;">
+            <i class="fas fa-headset" style="font-size: 4rem; color: #3b82f6; margin-bottom: 20px;"></i>
+            <h2 style="color: #60a5fa; margin-top: 0;">TEAMVIEWER REMOTE</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Sistem Kendali Jarak Jauh Scanner / Perangkat HP via TeamViewer.</p>
+            <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; max-width: 350px; margin: 0 auto; border: 1px solid var(--border-color);">
+                <label style="display: block; text-align: left; color: #ccc; margin-bottom: 8px; font-weight: bold;">PARTNER ID :</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="tv_partner_${app.id}" class="form-control" placeholder="Contoh: 123 456 789" style="margin-bottom: 0; font-size: 1.2rem; text-align: center;">
+                </div>
+                <button onclick="let id = document.getElementById('tv_partner_${app.id}').value.replace(/\\s/g, ''); if(id){ window.open('https://start.teamviewer.com/device/'+id, '_blank'); } else { appAlert('Masukkan Partner ID terlebih dahulu!', 'ID Kosong', 'warning'); }" class="btn-primary" style="width: 100%; margin-top: 15px; background: #2563eb;"><i class="fas fa-satellite-dish"></i> CONNECT DEVICE</button>
+            </div>
+            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 10px;">
+                <button onclick="window.open('https://download.teamviewer.com/download/TeamViewerQS.exe', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer;"><i class="fab fa-windows"></i> QS Windows</button>
+                <button onclick="window.open('https://play.google.com/store/apps/details?id=com.teamviewer.quicksupport.market', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer;"><i class="fab fa-android"></i> QS Android</button>
+            </div>
+        </div>`;
+    } else { 
+        return app.content; 
+    }
+}
+
+function jumpToMenuLevel(idx) { menuStack = menuStack.slice(0, idx + 1); renderCurrentMenuState(); }
+
+function renderCurrentMenuState() {
+    if(menuStack.length === 0) return;
+    requestAnimationFrame(() => {
+        const currentApp = menuStack[menuStack.length - 1]; 
+        
+        let breadcrumbHtml = menuStack.map((app, idx) => {
+            if (idx === menuStack.length - 1) return `<span style="color:#fff;">${app.title}</span>`;
+            return `<span style="color:var(--text-muted); cursor:pointer;" onclick="jumpToMenuLevel(${idx})">${app.title}</span>`;
+        }).join(' <i class="fas fa-angle-right" style="color:var(--primary-red); font-size:0.9rem; margin:0 8px;"></i> ');
+        
+        document.getElementById('detailTitle').innerHTML = breadcrumbHtml;
+        
+        const detailContent = document.getElementById('detailContent');
+        detailContent.innerHTML = buildContentHtml(currentApp);
+        
+        if (['pdf', 'web', 'image', 'mp4'].includes(currentApp.contentType)) {
+            // AKTIFKAN IMMERSIVE MODE
+            document.getElementById('detailScreen').classList.add('immersive-mode');
+            
+            detailContent.style.padding = '0';
+            detailContent.style.overflow = 'hidden';
+            if (['image', 'mp4'].includes(currentApp.contentType)) {
+                detailContent.style.backgroundColor = '#000';
+            } else {
+                detailContent.style.backgroundColor = 'transparent';
+            }
+            
+            if (currentApp.contentType === 'pdf') {
+                let urlCheck = currentApp.content.toLowerCase();
+                if (urlCheck.match(/\.(doc|docx|ppt|pptx|xls|xlsx)(\?|$)/)) {
+                    renderSecureIframeFallback(currentApp, currentApp.content);
+                } else {
+                    initHTML5Flipbook(currentApp);
+                }
+            }
+        } else {
+            // MATIKAN IMMERSIVE MODE & KEMBALIKAN HEADER
+            document.getElementById('detailScreen').classList.remove('immersive-mode');
+            document.querySelector('#detailScreen .detail-header').classList.remove('visible');
+            
+            detailContent.style.padding = '20px';
+            detailContent.style.overflow = 'auto';
+            detailContent.style.backgroundColor = 'transparent';
+        }
+
+        const btnOpenOutside = document.getElementById('btnOpenOutside');
+        if(currentApp.contentType === 'web') {
+            let safeWebUrl = currentApp.content.trim(); if (!safeWebUrl.startsWith('http://') && !safeWebUrl.startsWith('https://')) safeWebUrl = 'https://' + safeWebUrl;
+            btnOpenOutside.style.display = 'flex'; btnOpenOutside.onclick = function() { window.open(safeWebUrl, '_blank'); };
+        } else { btnOpenOutside.style.display = 'none'; }
+        
+        const detailScreen = document.getElementById('detailScreen');
+        if(detailScreen.style.display !== 'flex') { 
+            detailScreen.style.display = 'flex'; document.getElementById('dashboardScreen').style.display = 'none'; 
+        }
+
+        // Tampilkan header sebentar saat baru masuk ke Immersive Mode
+        if(detailScreen.classList.contains('immersive-mode')) showHeaderBriefly();
+
+        if (currentApp.contentType === 'folder' && currentUser && currentUser.role === 'Admin') {
+            const grid = document.getElementById(`folderGrid_${currentApp.id}`);
+            if (grid) {
+                Sortable.create(grid, {
+                    animation: 150, delay: 150, delayOnTouchOnly: true, ghostClass: 'sortable-ghost', fallbackOnBody: true,
+                    onStart: function() { isDraggingTile = true; },
+                    onEnd: function(evt) { setTimeout(() => isDraggingTile = false, 50); if(evt.oldIndex !== evt.newIndex) saveNewOrder(grid); }
+                });
+            }
+        }
+    });
+}
+
+let quickCreateParentId = null; let rightClickedAppId = null; 
+document.addEventListener('contextmenu', function(e) {
+    if (!currentUser || currentUser.role !== 'Admin') return; 
+    const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile'); 
+    
+    if (isDashboard || isDetail) {
+        e.preventDefault(); rightClickedAppId = null;
+        document.getElementById('ctxEdit').style.display = 'none'; document.getElementById('ctxDel').style.display = 'none';
+        document.getElementById('ctxAccessPub').style.display = 'none';
+        document.getElementById('ctxAccessPro').style.display = 'none';
+        document.getElementById('ctxAccessUlt').style.display = 'none';
+
+        if (tile && tile.getAttribute('data-id')) {
+            rightClickedAppId = tile.getAttribute('data-id');
+            document.getElementById('ctxEdit').style.display = 'flex'; document.getElementById('ctxDel').style.display = 'flex';
+            
+            let clickedApp = appDictionary[rightClickedAppId];
+            if (clickedApp) {
+                let reqAccess = (clickedApp.type && clickedApp.type.includes('_')) ? clickedApp.type.split('_')[1] : '';
+                document.getElementById('ctxAccessPub').style.display = 'flex';
+                document.getElementById('ctxAccessPro').style.display = 'flex';
+                document.getElementById('ctxAccessUlt').style.display = 'flex';
+                
+                document.getElementById('ctxAccessPub').innerHTML = `<i class="fas fa-globe"></i> Akses: Semua Member ${reqAccess==='' ? '<i class="fas fa-check" style="margin-left:auto;color:#10b981;"></i>' : ''}`;
+                document.getElementById('ctxAccessPro').innerHTML = `<i class="fas fa-star" style="color:silver;"></i> Akses: Khusus PRO ${reqAccess==='PRO' ? '<i class="fas fa-check" style="margin-left:auto;color:#10b981;"></i>' : ''}`;
+                document.getElementById('ctxAccessUlt').innerHTML = `<i class="fas fa-crown" style="color:gold;"></i> Akses: Khusus ULTIMATE ${reqAccess==='ULTIMATE' ? '<i class="fas fa-check" style="margin-left:auto;color:#10b981;"></i>' : ''}`;
+            }
+        }
+
+        if (isDetail && menuStack.length > 0) { quickCreateParentId = menuStack[menuStack.length - 1].id; } else { quickCreateParentId = ""; }
+
+        const menu = document.getElementById('adminContextMenu'); if (!menu) return; 
+        menu.style.display = 'block';
+        let x = e.clientX; let y = e.clientY;
+        if(x + 240 > window.innerWidth) x = window.innerWidth - 250; if(y + 240 > window.innerHeight) y = window.innerHeight - 250;
+        menu.style.left = x + 'px'; menu.style.top = y + 'px';
+    }
+});
+
+document.addEventListener('click', function(e) { const menu = document.getElementById('adminContextMenu'); if (menu && menu.style.display === 'block') menu.style.display = 'none'; });
+function closeContextMenu() { document.getElementById('adminContextMenu').style.display = 'none'; }
+
+function setNodeAccess(level) {
+    closeContextMenu();
+    if(!rightClickedAppId) return;
+    const index = appsData.findIndex(a => a.id === rightClickedAppId);
+    if(index === -1) return;
+    
+    let app = appsData[index];
+    let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : (app.type || '');
+    
+    if(level === '') app.type = baseType;
+    else app.type = baseType ? baseType + '_' + level : '_' + level;
+    
+    updateAppDictionary(); renderDynamicApps();
+    if(menuStack.length > 0) renderCurrentMenuState();
+    
+    apiRequest('sync_apps', appsData).catch(err => console.error("Sync Error", err));
+}
+
+function quickCreateNode() {
+    closeContextMenu(); showAppForm(false);
+    setTimeout(() => { const parentSelect = document.getElementById('formAppParent'); if (parentSelect) { parentSelect.value = quickCreateParentId; toggleContentType(); } }, 50);
+}
+function quickEditNode() { closeContextMenu(); if(rightClickedAppId) editApp(rightClickedAppId); }
+function quickDeleteNode() { closeContextMenu(); if(rightClickedAppId) deleteApp(rightClickedAppId); }
+
+function renderIconGrid() {
+    const grid = document.getElementById('iconGrid'); if(!grid) return; 
+    grid.innerHTML = iconList.map(icon => `<div class="icon-item" onclick="selectIcon('${icon}')" id="icon-${icon}" title="${icon}"><i class="fas ${icon}"></i></div>`).join('');
+}
+
+function selectIcon(iconClass) {
+    document.getElementById('formAppIcon').value = iconClass;
+    document.querySelectorAll('.icon-item').forEach(el => el.classList.remove('selected'));
+    const selectedEl = document.getElementById(`icon-${iconClass}`); if(selectedEl) selectedEl.classList.add('selected');
+}
+
+function openAdminPanel() {
+    document.getElementById('dashboardScreen').style.display = 'none'; 
+    document.getElementById('adminScreen').style.display = 'flex';
+    document.getElementById('formHeaderLogo').value = headerConfig.logoText || "Dr.Mesin";
+    document.getElementById('formHeaderModel').value = headerConfig.modelText || "X-431";
+    document.getElementById('formHeaderSN').value = headerConfig.snText || "";
+    document.getElementById('formHeaderWA').value = headerConfig.adminWA || "";
+    document.getElementById('formHeaderNotif').value = headerConfig.globalNotification || '';
+    renderAdminUserTable(); renderAdminAppTable();
+}
+
+function switchAdminTab(tabName) {
+    document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(el => el.classList.remove('active'));
+    
+    if(tabName === 'users') { 
+        document.querySelectorAll('.admin-tab')[0].classList.add('active'); 
+        document.getElementById('admin-users').classList.add('active'); 
+    }
+    else if(tabName === 'apps') { 
+        document.querySelectorAll('.admin-tab')[1].classList.add('active'); 
+        document.getElementById('admin-apps').classList.add('active'); 
+    }
+    else { 
+        document.querySelectorAll('.admin-tab')[2].classList.add('active'); 
+        document.getElementById('admin-header').classList.add('active'); 
+    }
+}
+
+function saveHeaderConfig() {
+    headerConfig.logoText = document.getElementById('formHeaderLogo').value || "Dr.Mesin";
+    headerConfig.modelText = document.getElementById('formHeaderModel').value || "X-431";
+    headerConfig.snText = document.getElementById('formHeaderSN').value || "";
+    headerConfig.adminWA = document.getElementById('formHeaderWA').value || "";
+    headerConfig.globalNotification = document.getElementById('formHeaderNotif').value.trim();
+    
+    applyHeaderConfig(); 
+    appAlert("Konfigurasi Web berhasil diperbarui secara instan!", "System Updated", "success");
+    
+    apiRequest('sync_config', headerConfig).then(res => {
+        if(!res.success) appAlert("Gagal menyimpan ke server: " + res.message, "Sync Error", "error");
+    });
+}
+
+function renderAdminUserTable() {
+    const tbody = document.getElementById('userTableBody'); 
+    tbody.innerHTML = usersData.map((u, index) => {
+        const sisa = getDaysRemaining(u.exp);
+        const statusHtml = sisa < 0 ? '<span class="status-expired">EXPIRED</span>' : '<span class="status-active">ACTIVE</span>';
+        
+        let roleBadge = u.role;
+        if(u.role === 'PRO') roleBadge = `<b style="color:silver;"><i class="fas fa-star"></i> PRO</b>`;
+        else if(u.role === 'ULTIMATE') roleBadge = `<b style="color:gold;"><i class="fas fa-crown"></i> ULTIMATE</b>`;
+        
+        return `<tr><td><b>${u.username}</b></td><td>${u.nama}</td><td>${u.email||'-'}</td><td>${u.phone||'-'}</td><td>${roleBadge}</td><td>${u.exp}</td><td>${statusHtml}</td>
+            <td><div class="action-cell" style="justify-content:center;"><button class="action-btn btn-edit" onclick="editUser(${index})"><i class="fas fa-edit"></i></button> <button class="action-btn btn-delete" onclick="deleteUser(${index})"><i class="fas fa-trash"></i></button></div></td></tr>`;
+    }).join('');
+}
+
+function showUserForm(index = -1) {
+    document.getElementById('userFormContainer').style.display = 'block'; 
+    document.getElementById('userFormTitle').innerText = index >= 0 ? 'Edit Member Data' : 'Add New Member';
+    
+    if(index === -1) { 
+        ['formUserId','formUserUsername','formUserPassword','formUserNama','formUserEmail','formUserPhone','formUserExp'].forEach(id => document.getElementById(id).value = ''); 
+        document.getElementById('formUserRole').value = 'Mekanik'; 
+    } else {
+        const u = usersData[index];
+        document.getElementById('formUserId').value = index; 
+        document.getElementById('formUserUsername').value = u.username;
+        document.getElementById('formUserPassword').value = u.pass;
+        document.getElementById('formUserNama').value = u.nama;
+        document.getElementById('formUserEmail').value = u.email;
+        document.getElementById('formUserPhone').value = u.phone;
+        document.getElementById('formUserRole').value = u.role;
+        document.getElementById('formUserExp').value = u.exp;
+    }
+}
+
+function editUser(index) { showUserForm(index); }
+
+function saveUser() {
+    const idIndex = document.getElementById('formUserId').value;
+    const userObj = { 
+        id: idIndex !== '' ? usersData[idIndex].id : 'U' + Date.now(), 
+        username: document.getElementById('formUserUsername').value, pass: document.getElementById('formUserPassword').value, 
+        nama: document.getElementById('formUserNama').value, email: document.getElementById('formUserEmail').value, 
+        phone: document.getElementById('formUserPhone').value, role: document.getElementById('formUserRole').value, exp: document.getElementById('formUserExp').value 
+    };
+    
+    if(!userObj.username || !userObj.pass || !userObj.exp) return appAlert("System ID, Key, dan Exp Date wajib diisi!", "Validation Error", "error");
+    
+    let backupArray = [...usersData]; 
+    if(idIndex !== '') usersData[idIndex] = userObj; else usersData.push(userObj);
+    
+    document.getElementById('userFormContainer').style.display = 'none';
+    renderAdminUserTable(); 
+    appAlert("Data berhasil dimodifikasi! Sinkronisasi latar belakang berjalan...", "Success", "success");
+    
+    apiRequest('sync_users', usersData).then(res => {
+        if(!res.success) { 
+            usersData = backupArray; 
+            renderAdminUserTable();
+            appAlert("Gagal menyimpan ke Database Server: " + res.message, "Sync Error", "error"); 
+        }
+    });
+}
+
+function deleteUser(index) {
+    if(usersData[index].username === 'drmesin03') return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
+    appConfirm("Delete this member permanently dari database?", function(yes) {
+        if(yes) { 
+            let backupArray = [...usersData]; 
+            usersData.splice(index, 1); 
+            renderAdminUserTable(); 
+
+            apiRequest('sync_users', usersData).then(res => {
+                if(!res.success) { 
+                    usersData = backupArray; 
+                    renderAdminUserTable(); 
+                    appAlert("Gagal menghapus dari server: " + res.message, "Sync Error", "error"); 
+                }
+            });
+        }
+    });
+}
+
+function populateParentDropdown(excludeId = null) {
+    const select = document.getElementById('formAppParent'); 
+    let ddHtml = '<option value="">-- ROOT DASHBOARD --</option>';
+    function buildFolderTree(parentId, levelMarker) {
+        const folders = appsData.filter(app => app.parentId === parentId && app.contentType === 'folder');
+        folders.forEach(f => {
+            if (f.id === excludeId) return; 
+            ddHtml += `<option value="${f.id}">${levelMarker} ${f.title}</option>`;
+            buildFolderTree(f.id, levelMarker + "&nbsp;&nbsp;&nbsp;↳ "); 
+        });
+    }
+    buildFolderTree(null, "↳ ");
+    select.innerHTML = ddHtml;
+}
+
+function updateAdminAppFilterDropdown() {
+    const filterSelect = document.getElementById('adminAppFilter'); if(!filterSelect) return;
+    const currentVal = filterSelect.value;
+    let html = `<option value="ALL">-- TAMPILKAN SEMUA DATA --</option><option value="ROOT">-- HANYA MENU UTAMA (ROOT) --</option>`;
+    const folders = appsData.filter(a => a.contentType === 'folder');
+    function buildFilterTree(parentId, prefix) {
+        folders.filter(f => f.parentId === parentId).forEach(f => { html += `<option value="${f.id}">${prefix} Folder: ${f.title}</option>`; buildFilterTree(f.id, prefix + "&nbsp;&nbsp;&nbsp;↳ "); });
+    }
+    buildFilterTree(null, "↳ ");
+    filterSelect.innerHTML = html;
+    if([...filterSelect.options].some(o => o.value === currentVal)) filterSelect.value = currentVal;
+}
+
+function getAppBreadcrumbOpt(appId) {
+    let path = []; let currId = appId;
+    let safeguard = 0; 
+    while(currId && appDictionary[currId] && safeguard < 20) { 
+        path.unshift(appDictionary[currId].title); 
+        currId = appDictionary[currId].parentId; 
+        safeguard++;
+    }
+    return path.join(' > ');
+}
+
+function isDescendantOpt(childId, parentId) {
+    let currId = childId;
+    let safeguard = 0;
+    while(currId && appDictionary[currId] && safeguard < 20) {
+        if(currId === parentId || appDictionary[currId].parentId === parentId) return true;
+        currId = appDictionary[currId].parentId;
+        safeguard++;
+    }
+    return false;
+}
+
+function renderAdminAppTable() {
+    updateAppDictionary(); 
+    updateAdminAppFilterDropdown();
+    const tbody = document.getElementById('appTableBody'); 
+    const filterVal = document.getElementById('adminAppFilter').value;
+
+    let sortedApps = [...appsData].map((app, index) => { 
+        return { ...app, originalIndex: index, breadcrumb: getAppBreadcrumbOpt(app.id) }; 
+    }).sort((a, b) => a.breadcrumb.localeCompare(b.breadcrumb));
+
+    let tableHtml = sortedApps.filter(app => {
+        if (filterVal === 'ROOT') return app.parentId === null;
+        if (filterVal !== 'ALL') return isDescendantOpt(app.id, filterVal);
+        return true;
+    }).map(app => {
+        let levelText = '';
+        let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
+        
+        if(!app.parentId) { levelText = `<b style="color:var(--primary-red)">ROOT (${baseType === 'large-red' ? 'LEFT' : 'RIGHT'})</b>`; } 
+        else {
+            let pathArr = app.breadcrumb.split(' > '); pathArr.pop(); 
+            levelText = `<div style="color:var(--text-muted); font-size:0.85rem; line-height:1.4;">${pathArr.join(' <i class="fas fa-angle-right" style="color:var(--primary-red); margin:0 3px;"></i> ')}</div>`;
+        }
+
+        let reqAccess = (app.type && app.type.includes('_')) ? app.type.split('_')[1] : '';
+        let accessBadge = reqAccess ? ` <span style="background:var(--primary-dark); padding:3px 6px; border-radius:4px; font-size:0.75rem;"><i class="fas ${reqAccess==='PRO'?'fa-star':'fa-crown'}"></i> ${reqAccess}</span>` : '';
+        const typeLabel = `<span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px; font-weight:bold; border: 1px solid var(--border-color);">${app.contentType.toUpperCase()}</span>${accessBadge}`;
+        return `<tr><td>${levelText}</td><td><i class="fas ${app.icon}" style="font-size:1.2rem; color:#aaa;"></i></td><td><b>${app.title}</b> ${app.badge ? `<span style="color:var(--primary-red); font-size:0.8rem; margin-left:5px;">[${app.badge}]</span>`:''}</td><td>${typeLabel}</td><td><div class="action-cell" style="justify-content:center;"><button class="action-btn btn-edit" onclick="editApp('${app.id}')"><i class="fas fa-edit"></i></button> <button class="action-btn btn-delete" onclick="deleteApp('${app.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`;
+    }).join('');
+    
+    if(tableHtml === '') { tableHtml = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Tidak ada data/sub-menu di dalam klasifikasi ini.</td></tr>`; }
+    tbody.innerHTML = tableHtml;
+}
+
+function toggleContentType() {
+    const type = document.getElementById('formAppContentType').value;
+    if (type === 'html') { document.getElementById('urlInputGroup').style.display = 'none'; document.getElementById('htmlInputGroup').style.display = 'flex'; } 
+    else if (type === 'folder' || type === 'teamviewer') { document.getElementById('urlInputGroup').style.display = 'none'; document.getElementById('htmlInputGroup').style.display = 'none'; } 
+    else { document.getElementById('urlInputGroup').style.display = 'flex'; document.getElementById('htmlInputGroup').style.display = 'none'; }
+    
+    const parentId = document.getElementById('formAppParent').value;
+    const typeGroup = document.getElementById('typeGroup');
+    if (typeGroup) typeGroup.style.display = parentId ? 'none' : 'flex';
+}
+
+function showAppForm(isEdit = false) {
+    populateParentDropdown();
+    document.getElementById('appFormContainer').style.display = 'flex'; 
+    document.getElementById('appFormTitle').innerText = isEdit ? 'Edit Node / Rename' : 'Create New Node';
+    document.querySelectorAll('.icon-item').forEach(el => el.classList.remove('selected'));
+    if(!isEdit) {
+        ['formAppId','formAppTitle','formAppIcon','formAppBadge','formAppContent','formAppUrl','formAppParent'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+        document.getElementById('formAppType').value = 'small-dark'; document.getElementById('formAppContentType').value = 'folder'; toggleContentType();
+    }
+}
+
+function editApp(appId) {
+    const index = appsData.findIndex(a => a.id === appId); if (index === -1) return;
+    const app = appsData[index];
+    populateParentDropdown(app.id); 
+    
+    let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : (app.type || 'small-dark');
+    document.getElementById('formAppId').value = app.id; document.getElementById('formAppParent').value = app.parentId || '';
+    document.getElementById('formAppTitle').value = app.title; document.getElementById('formAppType').value = baseType;
+    if(app.icon) selectIcon(app.icon);
+    document.getElementById('formAppBadge').value = app.badge || ''; document.getElementById('formAppContentType').value = app.contentType;
+    toggleContentType();
+    if(['pdf','web','mp4','image'].includes(app.contentType)) { document.getElementById('formAppUrl').value = app.content; } 
+    else { document.getElementById('formAppContent').value = app.content || ''; }
+    showAppForm(true);
+}
+
+function saveApp() {
+    const appId = document.getElementById('formAppId').value;
+    const contentType = document.getElementById('formAppContentType').value;
+    let isNew = (appId === ''); let finalContent = '';
+
+    if (contentType === 'html') { finalContent = document.getElementById('formAppContent').value; } 
+    else if (['pdf','web','mp4','image'].includes(contentType)) { finalContent = document.getElementById('formAppUrl').value; if (!finalContent) return appAlert("Target Source URL is required!", "Field Required", "warning"); }
+    const parentId = document.getElementById('formAppParent').value || null;
+    
+    let baseType = parentId ? null : document.getElementById('formAppType').value;
+    let finalType = baseType;
+    
+    if (!isNew) {
+        let oldApp = appsData.find(a => a.id === appId);
+        let oldAccess = (oldApp.type && oldApp.type.includes('_')) ? oldApp.type.split('_')[1] : '';
+        if(oldAccess) { finalType = baseType ? baseType + '_' + oldAccess : '_' + oldAccess; }
+    }
+
+    const appObj = { id: isNew ? 'MENU_' + Date.now() : appId, parentId: parentId, title: document.getElementById('formAppTitle').value, type: finalType, icon: document.getElementById('formAppIcon').value || 'fa-folder', badge: document.getElementById('formAppBadge').value, contentType: contentType, content: finalContent };
+    if(!appObj.title) return appAlert("Module Name is required!", "Field Required", "warning");
+    
+    let backupArray = [...appsData]; 
+    if(!isNew) { const index = appsData.findIndex(a => a.id === appId); if(index !== -1) appsData[index] = appObj; } 
+    else { appsData.push(appObj); }
+    
+    updateAppDictionary();
+    document.getElementById('appFormContainer').style.display = 'none'; 
+    renderAdminAppTable(); renderDynamicApps(); 
+    if(menuStack.length > 0) renderCurrentMenuState(); 
+    if (isNew && contentType === 'folder') { openMenu(appObj.id); }
+
+    apiRequest('sync_apps', appsData).then(res => {
+        if(!res.success) { 
+            appsData = backupArray; updateAppDictionary();
+            renderAdminAppTable(); renderDynamicApps(); 
+            appAlert("Gagal menyimpan ke server: " + res.message, "Sync Error", "error"); 
+        }
+    });
+}
+
+function deleteNodeRecursive(nodeId) {
+    const children = appsData.filter(a => a.parentId === nodeId);
+    children.forEach(child => deleteNodeRecursive(child.id));
+    const index = appsData.findIndex(a => a.id === nodeId);
+    if (index !== -1) { appsData.splice(index, 1); }
+}
+
+function deleteApp(appId) {
+    const index = appsData.findIndex(a => a.id === appId); if (index === -1) return;
+    const app = appsData[index]; const hasChildren = appsData.some(a => a.parentId === app.id);
+    let confirmMsg = `Apakah Anda yakin ingin menghapus "${app.title}" secara permanen dari Database?`;
+    if(hasChildren) { confirmMsg = `PERINGATAN! "${app.title}" masih berisi Sub-Menu/Folder lain di dalamnya.\n\nApakah Anda yakin ingin menghapus folder ini BESERTA SELURUH ISINYA dari Database?`; }
+
+    appConfirm(confirmMsg, function(agreed) {
+        if(agreed) {
+            let backupArray = [...appsData]; 
+            deleteNodeRecursive(appId); 
+            updateAppDictionary();
+            
+            const isCurrentDeleted = menuStack.some(m => m.id === appId);
+            if(isCurrentDeleted) { menuStack = []; document.getElementById('detailScreen').style.display = 'none'; }
+            renderAdminAppTable(); renderDynamicApps(); 
+            if(menuStack.length > 0) renderCurrentMenuState(); 
+
+            apiRequest('sync_apps', appsData).then(res => {
+                if(!res.success) { 
+                    appsData = backupArray; updateAppDictionary();
+                    renderAdminAppTable(); renderDynamicApps(); 
+                    appAlert("Gagal menghapus data dari server: " + res.message, "Sync Error", "error"); 
+                }
+            });
+        }
+    });
+}
+
+let isPreviewingFromForm = false;
+
+function openPreviewFromForm() {
+    isPreviewingFromForm = true;
+    document.getElementById('btnApplyPreview').style.display = 'inline-block';
+    document.getElementById('liveHtmlEditor').value = document.getElementById('formAppContent').value;
+    document.getElementById('htmlPreviewerModal').style.display = 'flex';
+    runLivePreview();
+}
+
+function applyPreviewToForm() {
+    document.getElementById('formAppContent').value = document.getElementById('liveHtmlEditor').value;
+    document.getElementById('htmlPreviewerModal').style.display = 'none';
+    appAlert("Kode HTML berhasil di-update dan diterapkan ke Form Edit Node!", "Editor Berhasil", "success");
+}
+
+function runLivePreview() {
+    const code = document.getElementById('liveHtmlEditor').value;
+    const iframe = document.getElementById('liveHtmlFrame');
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(code);
+    doc.close();
+}
+
+document.getElementById('liveHtmlEditor').addEventListener('input', function() {
+    clearTimeout(this.previewTimeout);
+    this.previewTimeout = setTimeout(runLivePreview, 800);
+});
+
+// ==========================================
+// AUTO-HIDE HEADER SENSOR (IMMERSIVE MODE) - FAST RESPONSIVE
+// ==========================================
+let detailHeaderTimer;
+const detailScreenEl = document.getElementById('detailScreen');
+const detailHeaderEl = detailScreenEl.querySelector('.detail-header');
+
+function showHeaderBriefly() {
+    if (!detailScreenEl.classList.contains('immersive-mode')) return;
+    detailHeaderEl.classList.add('visible');
+    clearTimeout(detailHeaderTimer);
+    detailHeaderTimer = setTimeout(() => {
+        if (!detailHeaderEl.matches(':hover')) {
+            detailHeaderEl.classList.remove('visible');
+        }
+    }, 2500); 
+}
+
+// 1. Munculkan saat mouse mendekati atas (Jarak Sensor Diperbesar & Langsung Merespon)
+detailScreenEl.addEventListener('mousemove', function(e) {
+    if (!detailScreenEl.classList.contains('immersive-mode')) return;
+    
+    if (e.clientY <= 150) { 
+        // Langsung munculkan tanpa delay jika masuk zona sensor 150px dari atas
+        detailHeaderEl.classList.add('visible');
+        clearTimeout(detailHeaderTimer);
+    } else {
+        // Jika keluar zona sensor dan bar sedang aktif, persiapkan auto-hide
+        if (detailHeaderEl.classList.contains('visible') && !detailHeaderEl.matches(':hover')) {
+            clearTimeout(detailHeaderTimer);
+            detailHeaderTimer = setTimeout(() => {
+                detailHeaderEl.classList.remove('visible');
+            }, 1500); // Cepat bersembunyi (1.5 detik) setelah dijauhi
+        }
+    }
+});
+
+// 2. Pertahankan bar tetap tampil jika kursor sengaja diam di atas bar tersebut
+detailHeaderEl.addEventListener('mouseenter', function() {
+    if (detailScreenEl.classList.contains('immersive-mode')) {
+        clearTimeout(detailHeaderTimer); detailHeaderEl.classList.add('visible');
+    }
+});
+detailHeaderEl.addEventListener('mouseleave', function() {
+    if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
+});
+
+// 3. Sensor sentuhan (Touch) khusus untuk pengguna Mobile/HP
+detailScreenEl.addEventListener('touchstart', function() {
+    if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
+}, {passive: true});
+
+</script>
+
+<script defer type="text/javascript">
+function googleTranslateElementInit() { new google.translate.TranslateElement({ pageLanguage: 'id', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_element'); }
+</script>
+<script defer type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
