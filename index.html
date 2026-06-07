@@ -24,6 +24,8 @@
             --text-muted: #aaaaaa;
         }
 
+        *, *::before, *::after { box-sizing: border-box; } /* Optimasi Layout Responsif Global */
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -78,18 +80,39 @@
         .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
         body { top: 0px !important; }
 
+        /* SPLASH SCREEN KUSTOM BARU */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
-            background: #080808; z-index: 9999999; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.3s ease-out;
+            background: radial-gradient(circle at center, #1a0000 0%, #050505 100%);
+            z-index: 9999999; display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .logo-container { padding: 20px; border-radius: 12px; background: var(--surface-color); border: 1px solid var(--border-color); box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
-        .welcome-logo { max-width: 250px; max-height: 250px; object-fit: contain; }
-        .loading-text { margin-top: 25px; color: var(--primary-red); font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; }
+        .splash-content { text-align: center; animation: splashFadeUp 0.8s ease-out forwards; }
+        .splash-logo-wrapper { 
+            width: 110px; height: 110px; margin: 0 auto 20px; 
+            background: rgba(230, 0, 0, 0.05); border: 2px solid var(--primary-red);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 30px rgba(230, 0, 0, 0.3);
+            animation: splashPulse 2s infinite;
+        }
+        .splash-icon { font-size: 3.5rem; color: var(--primary-red); text-shadow: 0 0 15px rgba(230,0,0,0.8); }
+        .splash-title { margin: 0; font-size: 2.5rem; font-weight: 800; color: #fff; letter-spacing: 2px; }
+        .splash-title span { color: var(--primary-red); }
+        .splash-subtitle { margin: 5px 0 35px 0; font-size: 0.85rem; color: var(--text-muted); letter-spacing: 4px; font-weight: 600; }
+        
+        .splash-loader { width: 250px; height: 4px; background: #222; border-radius: 2px; margin: 0 auto; overflow: hidden; position: relative;}
+        .splash-progress { width: 0%; height: 100%; background: var(--primary-red); animation: splashLoad 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; box-shadow: 0 0 10px var(--primary-red);}
+        .splash-status { margin-top: 15px; font-size: 0.8rem; color: var(--primary-red); font-weight: bold; letter-spacing: 2px; animation: blink 1.5s infinite; }
+        .splash-footer { position: absolute; bottom: 30px; font-size: 0.75rem; color: #444; letter-spacing: 2px; }
 
-        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+        @keyframes splashFadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes splashPulse { 0% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } 50% { box-shadow: 0 0 40px rgba(230,0,0,0.6); } 100% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } }
+        @keyframes splashLoad { 0% { width: 0%; } 20% { width: 30%; } 60% { width: 75%; } 100% { width: 100%; } }
+
+        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; position: relative; z-index: 10; padding: 15px;}
         .login-box {
             background: rgba(20, 20, 20, 0.98); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.9);
-            width: 85%; max-width: 380px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
+            width: 100%; max-width: 380px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
         }
         .login-box.active { padding: 40px 35px; }
         .login-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary-red); }
@@ -105,7 +128,7 @@
         .login-box h2 { font-weight: 700; letter-spacing: 2px; margin: 0 0 25px 0; font-size: 1.5rem; color: #fff;}
         .input-group { margin-bottom: 20px; text-align: left; position: relative; }
         .input-group i { position: absolute; top: 14px; left: 15px; color: var(--text-muted); font-size: 1.1rem; transition: 0.3s; }
-        .input-group input { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.8); color: white; border-radius: 6px; box-sizing: border-box; font-size: 1rem; transition: 0.2s; }
+        .input-group input { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.8); color: white; border-radius: 6px; box-sizing: border-box; font-size: 16px; /* 16px prevents iOS zoom */ transition: 0.2s; }
         .input-group input:focus { outline: none; border-color: var(--primary-red); background: #000; }
         .input-group input:focus + i { color: var(--primary-red); }
         
@@ -115,11 +138,11 @@
 
         .app-header {
             background: rgba(15, 15, 15, 0.98); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 2px solid var(--primary-red); flex-shrink: 0; z-index: 100;
+            align-items: center; border-bottom: 2px solid var(--primary-red); flex-shrink: 0; z-index: 100; gap: 10px;
         }
         .app-header .header-left { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-muted); }
         .app-header .header-left i { font-size: 1.8rem; color: var(--primary-red); }
-        .app-header .header-logo { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
+        .app-header .header-logo { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
         .app-header .header-logo span { color: var(--primary-red); }
         .app-header .header-right { display: flex; align-items: center; gap: 8px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
         
@@ -127,8 +150,8 @@
         .btn-logout:hover { transform: scale(1.1); }
         .btn-chat-header, .btn-profile { background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
         .btn-chat-header:hover, .btn-profile:hover { border-color: var(--primary-red); }
-        .btn-chat-header { width: 35px; height: 35px; }
-        .btn-profile { padding: 6px 12px; font-size: 0.95rem; gap: 8px; font-weight: 600;}
+        .btn-chat-header { width: 35px; height: 35px; flex-shrink: 0;}
+        .btn-profile { padding: 6px 12px; font-size: 0.95rem; gap: 8px; font-weight: 600; white-space: nowrap; }
 
         #dashboardScreen { display: none; padding: 20px; flex: 1; overflow-y: auto; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
         .dashboard-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; height: 100%; }
@@ -143,7 +166,7 @@
         .tile:hover { background: rgba(35, 35, 35, 1); border-color: var(--primary-red); transform: scale(1.03); }
         .tile i { font-size: 2.5rem; margin-bottom: 12px; color: #ddd; transition: color 0.2s; }
         .tile:hover i { color: var(--primary-red); }
-        .tile .title { font-size: 0.9rem; font-weight: bold; color: #ccc; line-height: 1.2; }
+        .tile .title { font-size: 0.9rem; font-weight: bold; color: #ccc; line-height: 1.2; word-wrap: break-word;}
         
         .sortable-ghost { opacity: 0.4; border: 2px dashed #666 !important; background: rgba(0,0,0,0.8) !important; }
         
@@ -199,7 +222,7 @@
         .form-grid.full { grid-template-columns: 1fr; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; text-align: left; }
         .form-group label { font-size: 0.95rem; font-weight: bold; color: #ccc; margin-bottom: 6px; }
-        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background: rgba(0,0,0,0.8); color: #fff; font-family: inherit; font-size: 1rem; transition: 0.2s; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background: rgba(0,0,0,0.8); color: #fff; font-family: inherit; font-size: 16px; transition: 0.2s; }
         .form-control:focus { outline: none; border-color: var(--primary-red); background: #000; box-shadow: 0 0 5px rgba(230,0,0,0.3); }
         .btn-primary { background: var(--primary-red); color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-primary:active { transform: scale(0.95); }
@@ -231,14 +254,6 @@
         .profile-info p { margin: 12px 0; font-size: 1rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px; color: var(--text-muted);}
         .profile-info p span { font-weight: bold; color: #fff; float: right; }
 
-        @media (max-width: 900px) { .dashboard-wrapper { flex-direction: column; } .left-pane { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; } }
-        @media (max-width: 768px) {
-            .admin-layout { flex-direction: column; } .admin-tabs-side { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; overflow-x: auto; white-space: nowrap; }
-            .admin-tab { border-left: none; border-bottom: 4px solid transparent; padding: 14px 20px; flex: 1; justify-content: center; } .admin-tab.active { border-bottom-color: var(--primary-red); }
-            .form-grid { grid-template-columns: 1fr; gap: 12px; } #dashboardScreen { padding: 15px; } .right-pane { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-            .tile { padding: 12px 8px; } .tile i { font-size: 2rem; margin-bottom: 8px; } .tile .title { font-size: 0.8rem; } .tile.red-tile { padding: 15px 10px; } .tile.red-tile i { font-size: 2.8rem; }
-        }
-
         .btn-glowing-open { background: var(--primary-red); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .icon-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; }
         .icon-item { display: flex; align-items: center; justify-content: center; height: 45px; border-radius: 6px; background: rgba(255,255,255,0.05); cursor: pointer; font-size: 1.3rem; color: var(--text-muted); transition: 0.2s;}
@@ -250,26 +265,90 @@
 
         .status-active { color: #10b981; font-weight: bold; } .status-expired { color: var(--primary-red); font-weight: bold; }
         
-        .chat-bubble { max-width: 80%; padding: 12px 18px; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; word-wrap: break-word; animation: fadeIn 0.3s ease; }
+        .chat-bubble { max-width: 80%; padding: 12px 18px; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; word-wrap: break-word; animation: fadeIn 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .chat-sent { align-self: flex-end; background: var(--primary-dark); border-bottom-right-radius: 0; }
         .chat-recv { align-self: flex-start; background: #262626; border-bottom-left-radius: 0;}
         .chat-input-area { background: rgba(20,20,20,1); padding: 15px 20px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); }
         .chat-input-area input { flex: 1; margin: 0; }
 
         .html-preview-split { display: flex; flex: 1; overflow: hidden; flex-direction: row; padding: 15px; gap: 15px; }
-        @media (max-width: 768px) { .html-preview-split { flex-direction: column; overflow-y: auto; } }
 
-        /* IMMERSIVE MODE CSS (Auto-Hide Header Khusus Web & Media) */
+        /* IMMERSIVE MODE CSS */
         #detailScreen.immersive-mode .detail-header {
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
-            transform: translateY(-100%); box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-            transition: transform 0.15s ease-out; /* Dibuat lebih cepat (0.15s) untuk respons instan */
+            transform: translateX(100%); /* MENGHILANG KE SAMPING KANAN */
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        #detailScreen.immersive-mode .detail-header.visible {
-            transform: translateY(0);
+        #detailScreen.immersive-mode .detail-header.visible { transform: translateX(0); }
+        #detailScreen.immersive-mode .detail-content { height: 100vh; height: 100dvh; padding: 0 !important; }
+
+        /* SHORTCUT BACK BUTTON FLOATING */
+        .floating-back-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 90;
+            background: rgba(0, 0, 0, 0.6); color: #fff;
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; opacity: 0; pointer-events: none;
+            transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            font-size: 1.2rem; border: 1px solid var(--border-color);
         }
-        #detailScreen.immersive-mode .detail-content {
-            height: 100vh; height: 100dvh; padding: 0 !important;
+        .floating-back-btn:hover { background: var(--primary-red); border-color: var(--primary-red); transform: scale(1.1); }
+        #detailScreen.immersive-mode .floating-back-btn { opacity: 1; pointer-events: auto; }
+        /* Sembunyikan tombol floating back saat header muncul agar tidak tumpang tindih */
+        #detailScreen.immersive-mode .detail-header.visible ~ .floating-back-btn { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+        /* ========================================================
+           OPTIMASI RESPONSIVE OTOMATIS (TABLET, HP, LAPTOP) 
+           ======================================================== */
+        
+        /* TABLET & SMALL LAPTOP (Max 900px) */
+        @media (max-width: 900px) { 
+            .dashboard-wrapper { flex-direction: column; } 
+            .left-pane { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; } 
+        }
+
+        /* TAB KECIL & HP BESAR (Max 768px) */
+        @media (max-width: 768px) {
+            .app-header { flex-wrap: wrap; padding: 10px 15px; }
+            .header-logo { order: -1; flex: 1 1 100%; text-align: center; margin-bottom: 10px; font-size: 1.8rem !important; }
+            .admin-layout { flex-direction: column; } 
+            .admin-tabs-side { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; overflow-x: auto; white-space: nowrap; }
+            .admin-tab { border-left: none; border-bottom: 4px solid transparent; padding: 14px 20px; flex: 1; justify-content: center; font-size: 0.95rem;} 
+            .admin-tab.active { border-bottom-color: var(--primary-red); }
+            .form-grid { grid-template-columns: 1fr; gap: 12px; } 
+            #dashboardScreen { padding: 15px; } 
+            .right-pane { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+            .tile { padding: 12px 8px; } .tile i { font-size: 2rem; margin-bottom: 8px; } .tile .title { font-size: 0.8rem; } .tile.red-tile { padding: 15px 10px; } .tile.red-tile i { font-size: 2.8rem; }
+            .login-box { width: 92%; padding: 25px 20px; }
+            .login-box.active { padding: 30px 20px; }
+            .detail-header { padding: 10px 15px; font-size: 1.05rem; }
+            .html-preview-split { flex-direction: column; overflow-y: auto; }
+        }
+
+        /* SMARTPHONE / HP KECIL (Max 480px) */
+        @media (max-width: 480px) {
+            .header-left span { display: none; } /* Sembunyikan text SN untuk space */
+            .header-left b { font-size: 0.8rem; }
+            .header-logo { font-size: 1.5rem !important; margin-bottom: 8px;}
+            .btn-profile { padding: 6px 10px; font-size: 0.85rem; }
+            .btn-chat-header { width: 32px; height: 32px; }
+            .btn-logout { font-size: 1.2rem; }
+            
+            .left-pane { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .right-pane { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; }
+            
+            .tile { padding: 10px 5px; }
+            .tile i { font-size: 1.8rem; margin-bottom: 6px; }
+            .tile .title { font-size: 0.75rem; }
+            
+            .tile.red-tile { padding: 12px 8px; }
+            .tile.red-tile i { font-size: 2.2rem; margin-bottom: 8px;}
+            .tile.red-tile .title { font-size: 0.95rem; }
+            
+            #dashboardScreen { padding: 10px; }
+            .custom-dialog-box { padding: 15px; width: 95%; }
+            .chat-bubble { max-width: 90%; font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -281,10 +360,19 @@
 <div id="BloggerAppContainer">
     
     <div id="welcomeScreen">
-        <div class="logo-container">
-            <img src="URL_GAMBAR_DR_MESIN_DI_BLOGGER_ANDA" onerror="this.src='https://via.placeholder.com/600x300/111/e60000?text=Dr.Mesin+Denpasar'" alt="Dr. Mesin" class="welcome-logo">
+        <div class="splash-content">
+            <div class="splash-logo-wrapper">
+                <i class="fas fa-microchip splash-icon"></i>
+            </div>
+            <h1 class="splash-title">DrCardata <span>PRO</span></h1>
+            <p class="splash-subtitle">ADVANCED DIAGNOSTIC SYSTEM</p>
+            
+            <div class="splash-loader">
+                <div class="splash-progress"></div>
+            </div>
+            <div class="splash-status" id="splashStatusText">INITIALIZING SYSTEM...</div>
         </div>
-        <div class="loading-text">SYSTEM INITIALIZATION <i class="fas fa-circle-notch fa-spin"></i></div>
+        <div class="splash-footer">V2.0.0 SECURE BUILD</div>
     </div>
 
     <div class="app-header" id="mainHeader" style="display: none;">
@@ -353,6 +441,12 @@
             <div id="detailTitle" style="flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">Menu Title</div>
             <button id="btnOpenOutside" class="btn-glowing-open" style="display: none;"><i class="fas fa-external-link-alt"></i> BUKA DI LUAR</button>
         </div>
+        
+        <!-- TOMBOL SHORTCUT KEMBALI SAAT HEADER MENGHILANG -->
+        <div class="floating-back-btn" onclick="goBack()" title="Kembali (Shortcut: Esc)">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        
         <div class="detail-content" id="detailContent"></div>
     </div>
 
@@ -382,11 +476,13 @@
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('chatScreen')"><i class="fas fa-chevron-left"></i></button>
             <span style="flex: 1;"><i class="fas fa-comment-dots" style="margin-right:8px; color:var(--primary-red);"></i> SECURE COMMS</span>
+            <button onclick="clearChatHistory()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size: 1.1rem; padding: 5px;" title="Bersihkan Obrolan Lokal"><i class="fas fa-trash-alt"></i></button>
         </div>
-        <div class="detail-content" id="chatContainerWrapper" style="padding: 20px; display: flex; flex-direction: column;">
-            <div id="chatMessages" style="display:flex; flex-direction:column;"></div>
+        <div class="detail-content" id="chatContainerWrapper" style="padding: 20px; display: flex; flex-direction: column; overflow-y: auto;">
+            <div id="chatMessages" style="display:flex; flex-direction:column; justify-content: flex-end; min-height: 100%;"></div>
         </div>
-        <div class="chat-input-area">
+        <!-- Padding tambahan pada chat input agar tidak ketutupan area home indikator pada HP iOS -->
+        <div class="chat-input-area" style="padding-bottom: max(15px, env(safe-area-inset-bottom));">
             <input type="text" id="chatInput" class="form-control" placeholder="Ketik pesan..." onkeypress="handleChatEnter(event)">
             <button class="btn-primary" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -600,7 +696,23 @@ let currentUser = null;
 let menuStack = []; 
 let isDraggingTile = false; 
 
-let appsData = []; let usersData = []; let headerConfig = {}; let chatMessagesDummy = [{ sender: 'drmesin03', name: 'Admin Bengkel', text: 'Sistem komunikasi online aktif.', time: '08:00' }];
+let appsData = []; let usersData = []; let headerConfig = {}; 
+
+// INISIALISASI CHAT DATA DARI LOCAL STORAGE
+let chatMessagesData = [];
+try {
+    const stored = localStorage.getItem('drcardata_chat_history');
+    if (stored) chatMessagesData = JSON.parse(stored);
+} catch(e){}
+
+if (chatMessagesData.length === 0) {
+    chatMessagesData = [{ 
+        sender: 'system', 
+        name: 'SYSTEM', 
+        text: 'Secure communication channel established. End-to-end local encryption active.', 
+        time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
+    }];
+}
 
 let appDictionary = {}; 
 function updateAppDictionary() {
@@ -813,13 +925,27 @@ const iconList = [
 
 document.addEventListener("DOMContentLoaded", function() {
     renderIconGrid(); 
+    
+    // Skenario Teks Loading Dinamis
+    const splashStatus = document.getElementById('splashStatusText');
+    if(splashStatus) {
+        setTimeout(() => { splashStatus.innerText = "ESTABLISHING SECURE COMMS..."; }, 800);
+        setTimeout(() => { splashStatus.innerText = "LOADING MODULES..."; }, 1500);
+        setTimeout(() => { splashStatus.innerText = "SYSTEM READY"; splashStatus.style.color = "#10b981"; }, 2200);
+    }
+
     setTimeout(() => {
         const splash = document.getElementById('welcomeScreen');
         if (splash) {
             splash.style.opacity = '0';
-            setTimeout(() => { splash.style.display = 'none'; document.getElementById('loginScreen').style.display = 'flex'; }, 300); 
+            splash.style.transform = 'scale(1.1)'; // Efek zoom out halus saat menghilang
+            setTimeout(() => { 
+                splash.style.display = 'none'; 
+                document.getElementById('loginScreen').style.display = 'flex'; 
+                revealLogin(); // Buka gembok login secara otomatis tanpa perlu diklik manual
+            }, 600); 
         }
-    }, 150);
+    }, 2600); // Beri waktu 2.6 detik agar animasi bar loading selesai
 });
 
 function revealLogin() {
@@ -1029,22 +1155,65 @@ function closeModal(id) {
     document.getElementById('dashboardScreen').style.display = 'block'; 
 }
 
+// LOGIKA CHAT YANG SUDAH DIPERBAIKI (LOCAL PERSISTENT)
 function renderChatMessages() {
     const container = document.getElementById('chatMessages');
-    container.innerHTML = chatMessagesDummy.map(msg => {
+    container.innerHTML = chatMessagesData.map(msg => {
         const isMe = currentUser && msg.sender === currentUser.username;
         const bubbleClass = isMe ? 'chat-sent' : 'chat-recv';
-        return `<div class="chat-bubble ${bubbleClass}"><div style="font-size:0.85em; font-weight:bold; margin-bottom:5px; color:#ddd;">${msg.name.toUpperCase()}</div><div>${msg.text}</div><div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.7;">${msg.time}</div></div>`;
+        const senderName = isMe ? 'ANDA' : msg.name.toUpperCase();
+        
+        // Membedakan warna dan layout untuk Pesan Sistem
+        if (msg.sender === 'system') {
+            return `<div style="text-align:center; margin: 15px 0; font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                        --- ${msg.text} ---<br><small>${msg.time}</small>
+                    </div>`;
+        }
+
+        return `<div class="chat-bubble ${bubbleClass}">
+                    <div style="font-size:0.75em; font-weight:bold; margin-bottom:5px; color:${isMe ? '#ffcccc' : '#aaa'};">${senderName}</div>
+                    <div>${msg.text}</div>
+                    <div style="font-size:0.65em; text-align:right; margin-top:6px; opacity:0.7;">${msg.time}</div>
+                </div>`;
     }).join('');
-    const wrapper = document.getElementById('chatContainerWrapper'); wrapper.scrollTop = wrapper.scrollHeight;
+    
+    const wrapper = document.getElementById('chatContainerWrapper'); 
+    // Delay sedikit agar DOM selesai ter-render sebelum auto-scroll (Perbaikan Bug Scroll)
+    setTimeout(() => { wrapper.scrollTop = wrapper.scrollHeight; }, 50);
 }
+
 function handleChatEnter(e) { if (e.key === 'Enter') sendChatMessage(); }
+
 function sendChatMessage() {
-    const input = document.getElementById('chatInput'); const text = input.value.trim();
+    const input = document.getElementById('chatInput'); 
+    const text = input.value.trim();
     if(!text || !currentUser) return;
-    const now = new Date(); const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-    chatMessagesDummy.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
-    input.value = ''; renderChatMessages();
+    
+    const now = new Date(); 
+    const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+    
+    chatMessagesData.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
+    input.value = ''; 
+    
+    // Simpan ke memory lokal (LocalStorage)
+    localStorage.setItem('drcardata_chat_history', JSON.stringify(chatMessagesData));
+    
+    renderChatMessages();
+}
+
+function clearChatHistory() {
+    appConfirm("Bersihkan seluruh riwayat obrolan di perangkat ini?", function(yes) {
+        if(yes) {
+            chatMessagesData = [{ 
+                sender: 'system', 
+                name: 'SYSTEM', 
+                text: 'Riwayat obrolan pada perangkat ini telah dibersihkan.', 
+                time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
+            }];
+            localStorage.setItem('drcardata_chat_history', JSON.stringify(chatMessagesData));
+            renderChatMessages();
+        }
+    });
 }
 
 function goBack() {
@@ -1066,7 +1235,7 @@ function goBack() {
 
 function buildContentHtml(app) {
     if (app.contentType === 'folder') {
-        let html = `<div id="folderGrid_${app.id}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:15px;">`;
+        let html = `<div id="folderGrid_${app.id}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:15px;" class="folder-grid-responsive">`;
         let count = 0;
         for(let i=0; i<appsData.length; i++){
             let c = appsData[i];
@@ -1113,7 +1282,6 @@ function buildContentHtml(app) {
         </div>`;
     } else if (app.contentType === 'web') {
         let safeWebUrl = app.content.trim(); if (!/^https?:\/\//i.test(safeWebUrl)) safeWebUrl = 'https://' + safeWebUrl;
-        // LAYOUT EDGE-TO-EDGE FULL VIEW DENGAN KUNCI ABSOLUTE AGAR TIDAK TERPOTONG
         return `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; overflow:hidden; transform: translateZ(0);">
             <iframe loading="lazy" id="webview-${app.id}" src="${safeWebUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write" style="flex:1; width:100%; height:100%; border:none; background:transparent;"></iframe>
         </div>`;
@@ -1121,14 +1289,11 @@ function buildContentHtml(app) {
         let rawUrl = app.content.trim(); let videoHtml = '';
         const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([\w-]{11})/i);
         if (ytMatch && ytMatch[1]) {
-            // LAYOUT FULL VIEW VIDEO YOUTUBE DENGAN PROTEKSI GANDA (OVERLAY + SANDBOX)
             videoHtml = `<div style="position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:#000; transform: translateZ(0);" oncontextmenu="return false;">
-                <!-- Pelindung klik: Atas (Judul & Share), Kanan Bawah (Logo YT), dan Kiri Bawah di atas control bar (Tonton di YouTube) -->
                 <div style="position:absolute; top:0; left:0; width:100%; height:80px; z-index:10; background:transparent; cursor:default;"></div>
                 <div style="position:absolute; bottom:0; right:0; width:120px; height:60px; z-index:10; background:transparent; cursor:default;"></div>
                 <div style="position:absolute; bottom:40px; left:0; width:220px; height:80px; z-index:10; background:transparent; cursor:default;"></div>
                 
-                <!-- Iframe ditambahkan 'sandbox' tanpa 'allow-popups' untuk memblokir paksa link keluar -->
                 <iframe loading="lazy" src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&modestbranding=1&playsinline=1&fs=1&iv_load_policy=3" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:1;" sandbox="allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             </div>`;
         } else if (rawUrl.includes('drive.google.com/file/d/')) {
@@ -1150,9 +1315,9 @@ function buildContentHtml(app) {
                 </div>
                 <button onclick="let id = document.getElementById('tv_partner_${app.id}').value.replace(/\\s/g, ''); if(id){ window.open('https://start.teamviewer.com/device/'+id, '_blank'); } else { appAlert('Masukkan Partner ID terlebih dahulu!', 'ID Kosong', 'warning'); }" class="btn-primary" style="width: 100%; margin-top: 15px; background: #2563eb;"><i class="fas fa-satellite-dish"></i> CONNECT DEVICE</button>
             </div>
-            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 10px;">
-                <button onclick="window.open('https://download.teamviewer.com/download/TeamViewerQS.exe', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer;"><i class="fab fa-windows"></i> QS Windows</button>
-                <button onclick="window.open('https://play.google.com/store/apps/details?id=com.teamviewer.quicksupport.market', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer;"><i class="fab fa-android"></i> QS Android</button>
+            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.open('https://download.teamviewer.com/download/TeamViewerQS.exe', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer; flex: 1; min-width: 120px;"><i class="fab fa-windows"></i> Windows</button>
+                <button onclick="window.open('https://play.google.com/store/apps/details?id=com.teamviewer.quicksupport.market', '_blank')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #ccc; padding: 8px 15px; border-radius: 6px; cursor: pointer; flex: 1; min-width: 120px;"><i class="fab fa-android"></i> Android</button>
             </div>
         </div>`;
     } else { 
@@ -1205,6 +1370,12 @@ function renderCurrentMenuState() {
             detailContent.style.padding = '20px';
             detailContent.style.overflow = 'auto';
             detailContent.style.backgroundColor = 'transparent';
+            
+            // Re-apply responsive grid if it's a folder
+            if(window.innerWidth <= 480) {
+                const fGrid = document.querySelector('.folder-grid-responsive');
+                if(fGrid) fGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(95px, 1fr))';
+            }
         }
 
         const btnOpenOutside = document.getElementById('btnOpenOutside');
@@ -1684,26 +1855,24 @@ function showHeaderBriefly() {
     }, 2500); 
 }
 
-// 1. Munculkan saat mouse mendekati atas (Jarak Sensor Diperbesar & Langsung Merespon)
+// Munculkan saat mouse mendekati atas
 detailScreenEl.addEventListener('mousemove', function(e) {
     if (!detailScreenEl.classList.contains('immersive-mode')) return;
     
     if (e.clientY <= 150) { 
-        // Langsung munculkan tanpa delay jika masuk zona sensor 150px dari atas
         detailHeaderEl.classList.add('visible');
         clearTimeout(detailHeaderTimer);
     } else {
-        // Jika keluar zona sensor dan bar sedang aktif, persiapkan auto-hide
         if (detailHeaderEl.classList.contains('visible') && !detailHeaderEl.matches(':hover')) {
             clearTimeout(detailHeaderTimer);
             detailHeaderTimer = setTimeout(() => {
                 detailHeaderEl.classList.remove('visible');
-            }, 1500); // Cepat bersembunyi (1.5 detik) setelah dijauhi
+            }, 1500); 
         }
     }
 });
 
-// 2. Pertahankan bar tetap tampil jika kursor sengaja diam di atas bar tersebut
+// Pertahankan bar tetap tampil jika kursor sengaja diam di atas bar tersebut
 detailHeaderEl.addEventListener('mouseenter', function() {
     if (detailScreenEl.classList.contains('immersive-mode')) {
         clearTimeout(detailHeaderTimer); detailHeaderEl.classList.add('visible');
@@ -1713,10 +1882,35 @@ detailHeaderEl.addEventListener('mouseleave', function() {
     if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
 });
 
-// 3. Sensor sentuhan (Touch) khusus untuk pengguna Mobile/HP
+// Sensor sentuhan (Touch) khusus untuk pengguna Mobile/HP
 detailScreenEl.addEventListener('touchstart', function() {
     if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
 }, {passive: true});
+
+// ==========================================
+// KEYBOARD SHORTCUT (ESC UNTUK KEMBALI)
+// ==========================================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const detailScreen = document.getElementById('detailScreen');
+        const htmlPreviewer = document.getElementById('htmlPreviewerModal');
+        const adminScreen = document.getElementById('adminScreen');
+        const profileScreen = document.getElementById('profileScreen');
+        const chatScreen = document.getElementById('chatScreen');
+
+        if (htmlPreviewer && htmlPreviewer.style.display === 'flex') {
+            htmlPreviewer.style.display = 'none';
+        } else if (detailScreen && detailScreen.style.display === 'flex') {
+            goBack();
+        } else if (adminScreen && adminScreen.style.display === 'flex') {
+            closeModal('adminScreen');
+        } else if (profileScreen && profileScreen.style.display === 'flex') {
+            closeModal('profileScreen');
+        } else if (chatScreen && chatScreen.style.display === 'flex') {
+            closeModal('chatScreen');
+        }
+    }
+});
 
 </script>
 
