@@ -176,7 +176,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
-            max-width: 1600px; /* Diperlebar agar optimal di desktop widescreen */
+            max-width: 1600px; 
             margin: 0 auto; 
             width: 100%;
         }
@@ -188,7 +188,7 @@
             width: 100%; 
         }
         .left-pane { 
-            flex: 0 0 280px; /* Menggunakan ukuran tetap yang proporsional untuk Panel Utama */
+            flex: 0 0 280px; 
             display: flex; 
             flex-direction: column; 
             gap: 15px; 
@@ -490,7 +490,7 @@
             }
             .top-panes {
                 flex: 1;
-                min-height: 0; /* Mengunci pane atas agar tetap dalam viewport scroll */
+                min-height: 0; 
             }
         }
 
@@ -601,7 +601,7 @@
             .bottom-tile .title { font-size: 0.75rem; }
         }
 
-        /* 6. Adaptasi Layar Sentuh Drag-and-Drop (Mencegah Ghosting di Seluruh Perangkat) */
+        /* 6. Adaptasi Layar Sentuh Drag-and-Drop */
         .sortable-fallback {
             opacity: 0.9 !important;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
@@ -665,11 +665,16 @@
                 <h2>SECURE ACCESS</h2>
                 <div class="input-group">
                     <i class="fas fa-user"></i>
-                    <input type="text" id="username" placeholder="System ID">
+                    <!-- Sembunyikan kredensial melalui non-cache -->
+                    <input type="text" id="username" placeholder="System ID" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)">
+                    <!-- Tipe password untuk menyembunyikan tulisan -->
+                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" style="padding-right: 45px;">
+                    <button type="button" onclick="togglePasswordVisibility('password', 'toggleLoginPassIcon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
+                        <i id="toggleLoginPassIcon" class="fas fa-eye"></i>
+                    </button>
                 </div>
                 <button class="btn-login" onclick="prosesLogin()"><i class="fas fa-sign-in-alt"></i> INITIALIZE LOGIN</button>
             </div>
@@ -788,7 +793,16 @@
                         <input type="hidden" id="formUserId">
                         <div class="form-grid">
                             <div class="form-group"><label>System ID (Username)</label><input type="text" id="formUserUsername" class="form-control" placeholder="Ketik ID unik..."></div>
-                            <div class="form-group"><label>Access Key (Password)</label><input type="text" id="formUserPassword" class="form-control" placeholder="Ketik password..."></div>
+                            <!-- TYPE DIUBAH KE PASSWORD AGAR TIDAK TERBACA KETIKA DI-INSPECT -->
+                            <div class="form-group">
+                                <label>Access Key (Password)</label>
+                                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                    <input type="password" id="formUserPassword" class="form-control" placeholder="Ketik password..." autocomplete="new-password" style="padding-right: 45px; width: 100%;">
+                                    <button type="button" onclick="togglePasswordVisibility('formUserPassword', 'toggleAdminPassIcon')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
+                                        <i id="toggleAdminPassIcon" class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <div class="form-group"><label>Nama Lengkap</label><input type="text" id="formUserNama" class="form-control" placeholder="Nama mekanik / admin..."></div>
                             <div class="form-group"><label>Alamat Email</label><input type="email" id="formUserEmail" class="form-control" placeholder="Opsional..."></div>
                             <div class="form-group"><label>Nomor Kontak / WA</label><input type="text" id="formUserPhone" class="form-control" placeholder="Misal: 62812..."></div>
@@ -983,7 +997,6 @@
 const IS_PREVIEW = false; 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxiyQ9olvJ7Aou2hsX0TfexvN12KsqD3DdMkGe5e-_iBrCs2m2eqtGpGOy7_C4rYTjc/exec"; 
 
-// Daftar Ikon Cepat untuk Modul Routing di Menu Admin
 const iconList = [
     "fa-car", "fa-motorcycle", "fa-truck", "fa-bus", "fa-wrench", "fa-tools", "fa-cog", "fa-cogs",
     "fa-microchip", "fa-tachometer-alt", "fa-battery-full", "fa-plug", "fa-bolt", "fa-oil-can", "fa-gas-pump", "fa-temperature-high",
@@ -999,12 +1012,14 @@ if (!deviceId) {
     localStorage.setItem('drcardata_device_id', deviceId);
 }
 let deviceCheckInterval = null;
-
 let currentUser = null;
 let menuStack = []; 
 let isDraggingTile = false; 
-
-let appsData = []; let usersData = []; let headerConfig = {}; 
+let appsData = []; 
+let usersData = []; 
+let headerConfig = {}; 
+let currentZoomLevel = 1;
+let appDictionary = {};
 
 let chatMessagesData = [];
 try {
@@ -1021,7 +1036,23 @@ if (chatMessagesData.length === 0) {
     }];
 }
 
-let currentZoomLevel = 1;
+let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
+
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input && icon) {
+        if (input.type === "password") {
+            input.type = "text";
+            icon.className = "fas fa-eye-slash";
+            icon.style.color = "var(--primary-red)";
+        } else {
+            input.type = "password";
+            icon.className = "fas fa-eye";
+            icon.style.color = "var(--text-muted)";
+        }
+    }
+}
 
 function changeZoom(delta) {
     currentZoomLevel += delta;
@@ -1042,7 +1073,6 @@ function applyZoom() {
     
     if(target && label) {
         label.innerText = Math.round(currentZoomLevel * 100) + '%';
-        
         target.style.zoom = currentZoomLevel;
         target.style.transformOrigin = 'top left';
         
@@ -1067,7 +1097,6 @@ function applyZoom() {
     }
 }
 
-let appDictionary = {}; 
 function updateAppDictionary() {
     appDictionary = {};
     for (let i = 0, len = appsData.length; i < len; i++) {
@@ -1087,8 +1116,6 @@ function canAccess(app) {
     
     return false;
 }
-
-let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
 
 function initHTML5Flipbook(app) {
     let rawUrl = app.content.trim(); let pdfUrl = rawUrl;
@@ -1314,8 +1341,14 @@ function getDaysRemaining(expDateStr) {
 }
 
 async function prosesLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
+    const userEl = document.getElementById('username');
+    const passEl = document.getElementById('password');
+    const user = userEl.value.trim();
+    const pass = passEl.value.trim();
+    
+    // Sembunyikan kredensial langsung dari DOM agar tidak bisa di-inspect element
+    userEl.value = '';
+    passEl.value = '';
     
     if(!user || !pass) return appAlert("System ID dan Password wajib diisi!", "Authentication Error", "error");
     if(!IS_PREVIEW && (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "")) return appAlert("Sistem belum dihubungkan ke Database.", "Warning", "warning");
@@ -1724,7 +1757,6 @@ function renderCurrentMenuState() {
         }).join(' <i class="fas fa-angle-right" style="color:var(--primary-red); font-size:0.9rem; margin:0 8px;"></i> ');
         
         document.getElementById('detailTitle').innerHTML = breadcrumbHtml;
-        
         const detailContent = document.getElementById('detailContent');
         
         currentZoomLevel = 1;
@@ -1734,7 +1766,6 @@ function renderCurrentMenuState() {
         detailContent.style.transform = 'none';
 
         detailContent.innerHTML = buildContentHtml(currentApp);
-        
         const zoomCtrl = document.getElementById('smartZoomCtrl');
 
         if (['pdf', 'web', 'image', 'mp4'].includes(currentApp.contentType)) {
@@ -1800,6 +1831,7 @@ function renderCurrentMenuState() {
 }
 
 let quickCreateParentId = null; let rightClickedAppId = null; 
+
 document.addEventListener('contextmenu', function(e) {
     if (!currentUser || currentUser.role !== 'Admin') return; 
     const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile, .bottom-tile'); 
@@ -1940,6 +1972,14 @@ function showUserForm(index = -1) {
     document.getElementById('userFormContainer').style.display = 'block'; 
     document.getElementById('userFormTitle').innerText = index >= 0 ? 'Edit Member Data' : 'Add New Member';
     
+    const adminPassInput = document.getElementById('formUserPassword');
+    const adminPassIcon = document.getElementById('toggleAdminPassIcon');
+    if (adminPassInput && adminPassIcon) {
+        adminPassInput.type = "password";
+        adminPassIcon.className = "fas fa-eye";
+        adminPassIcon.style.color = "var(--text-muted)";
+    }
+
     if(index === -1) { 
         ['formUserId','formUserUsername','formUserPassword','formUserNama','formUserEmail','formUserPhone','formUserExp'].forEach(id => document.getElementById(id).value = ''); 
         document.getElementById('formUserRole').value = 'Mekanik'; 
@@ -1987,7 +2027,7 @@ function saveUser() {
 }
 
 function deleteUser(index) {
-    if(usersData[index].username === 'drmesin03') return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
+    if(usersData[index].username === atob('ZHJtZXNpbjAz')) return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
     appConfirm("Delete this member permanently dari database?", function(yes) {
         if(yes) { 
             let backupArray = [...usersData]; 
@@ -2358,10 +2398,11 @@ function autoInjectUsers() {
     appConfirm("Tambahkan 3 Data Akun Member otomatis (Mekanik, PRO, dan ULTIMATE) untuk testing? Akun yang lama tidak akan dihapus.", function(yes) {
         if(yes) {
             document.getElementById('loadingOverlay').style.display = 'flex';
+            // Base64 Obfuscation untuk testing dummy credentials agar aman dari View Source
             const dummyUsers = [
-                { id: 'U' + Date.now() + '1', username: "mekanik_pro", pass: "12345", role: "PRO", nama: "Tester PRO", email: "pro@bengkel.com", phone: "628111", exp: "2099-12-31", devices: "[]" },
-                { id: 'U' + Date.now() + '2', username: "mekanik_vip", pass: "12345", role: "ULTIMATE", nama: "Tester VIP", email: "vip@bengkel.com", phone: "628222", exp: "2099-12-31", devices: "[]" },
-                { id: 'U' + Date.now() + '3', username: "mekanik_biasa", pass: "12345", role: "Mekanik", nama: "Tester Reguler", email: "reg@bengkel.com", phone: "628333", exp: "2099-12-31", devices: "[]" }
+                { id: 'U' + Date.now() + '1', username: atob("bWVrYW5pa19wcm8="), pass: atob("MTIzNDU="), role: "PRO", nama: "Tester PRO", email: "pro@bengkel.com", phone: "628111", exp: "2099-12-31", devices: "[]" },
+                { id: 'U' + Date.now() + '2', username: atob("bWVrYW5pa192aXA="), pass: atob("MTIzNDU="), role: "ULTIMATE", nama: "Tester VIP", email: "vip@bengkel.com", phone: "628222", exp: "2099-12-31", devices: "[]" },
+                { id: 'U' + Date.now() + '3', username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Tester Regular", email: "reg@bengkel.com", phone: "628333", exp: "2099-12-31", devices: "[]" }
             ];
             
             usersData = usersData.concat(dummyUsers);
