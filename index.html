@@ -15,15 +15,13 @@
     <style>
         :root {
             --bg-color: #080808;
-            --surface-color: #1a1a1a;
-            --surface-hover: #262626;
+            --surface-color: #1c1c1e;
+            --surface-hover: #2c2c2e;
             --border-color: #333333;
             --primary-red: #e60000;
             --primary-dark: #b30000;
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
-            --safe-area-top: env(safe-area-inset-top, 0px);
-            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -42,14 +40,24 @@
             overscroll-behavior-y: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
         }
 
         button, .admin-tab, .tile, .icon-item, .context-menu-item { touch-action: manipulation; }
 
-        /* Latar belakang dinamis adaptif */
         .bg-animated {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 0;
-            background: radial-gradient(circle at 50% 50%, #1a0000 0%, #050505 100%);
+            background: radial-gradient(circle at 50% 50%, #150000 0%, #050505 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite; 
             transform: translateZ(0);
@@ -57,45 +65,38 @@
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 1;
-            background-image: linear-gradient(rgba(230, 0, 0, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(230, 0, 0, 0.08) 1px, transparent 1px);
-            background-size: 40px 40px; pointer-events: none; box-shadow: inset 0 0 100px #000;
+            background-image: linear-gradient(rgba(230, 0, 0, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(230, 0, 0, 0.15) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none; box-shadow: inset 0 0 150px #000;
         }
         @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .header-widget, .sidebar, .footer, .fauxcolumn-outer { display: none !important; }
-        
-        /* Kontainer Utama Fleksibel Mengikuti Tinggi Viewport */
         #BloggerAppContainer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             z-index: 999999; display: flex; flex-direction: column;
-            overflow: hidden; background: transparent;
-            padding-top: var(--safe-area-top);
-            padding-bottom: var(--safe-area-bottom);
+            overflow-y: auto; overflow-x: hidden; background: transparent;
         }
 
-        /* Widget Google Translate */
         .translate-wrapper {
             position: relative; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px;
+            background: transparent; border: 1px solid var(--border-color); border-radius: 4px;
             cursor: pointer; transition: 0.2s; margin-right: 5px; overflow: hidden;
         }
-        .translate-wrapper:hover { background: var(--primary-red); border-color: var(--primary-red); }
+        .translate-wrapper:hover { background: rgba(255,255,255,0.1); border-color: #666; }
         .translate-wrapper i { color: var(--text-main); font-size: 1.1rem; pointer-events: none; z-index: 1; transition: 0.2s; }
-        .translate-wrapper:hover i { color: #fff; transform: translateY(-2px); }
         #google_translate_element { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; opacity: 0.01; }
         .goog-te-gadget { font-size: 0px !important; color: transparent !important; width: 100%; height: 100%; }
         .goog-te-gadget .goog-te-combo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; opacity: 0; }
         .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
         body { top: 0px !important; }
 
-        /* Welcome Splash Screen */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             background: radial-gradient(circle at center, #1a0000 0%, #050505 100%);
             z-index: 9999999; display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .splash-content { text-align: center; padding: 20px; animation: splashFadeUp 0.8s ease-out forwards; }
+        .splash-content { text-align: center; animation: splashFadeUp 0.8s ease-out forwards; }
         .splash-logo-wrapper { 
             width: 110px; height: 110px; margin: 0 auto 20px; 
             background: rgba(230, 0, 0, 0.05); border: 2px solid var(--primary-red);
@@ -111,17 +112,16 @@
         .splash-loader { width: 250px; height: 4px; background: #222; border-radius: 2px; margin: 0 auto; overflow: hidden; position: relative;}
         .splash-progress { width: 0%; height: 100%; background: var(--primary-red); animation: splashLoad 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; box-shadow: 0 0 10px var(--primary-red);}
         .splash-status { margin-top: 15px; font-size: 0.8rem; color: var(--primary-red); font-weight: bold; letter-spacing: 2px; animation: blink 1.5s infinite; }
-        .splash-footer { position: absolute; bottom: calc(30px + var(--safe-area-bottom)); font-size: 0.75rem; color: #444; letter-spacing: 2px; }
+        .splash-footer { position: absolute; bottom: 30px; font-size: 0.75rem; color: #444; letter-spacing: 2px; }
 
         @keyframes splashFadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes splashPulse { 0% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } 50% { box-shadow: 0 0 40px rgba(230,0,0,0.6); } 100% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } }
         @keyframes splashLoad { 0% { width: 0%; } 20% { width: 30%; } 60% { width: 75%; } 100% { width: 100%; } }
 
-        /* Login Screen & Security Panel */
-        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: relative; z-index: 10; padding: 15px; overflow-y: auto;}
+        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; position: relative; z-index: 10; padding: 15px;}
         .login-box {
             background: rgba(20, 20, 20, 0.98); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.9);
-            width: 100%; max-width: 390px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
+            width: 100%; max-width: 380px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
         }
         .login-box.active { padding: 40px 35px; }
         .login-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary-red); }
@@ -130,6 +130,7 @@
         .login-box.active .login-logo-container { transform: scale(0.65) translateY(-15px); margin-bottom: -35px; }
         .click-hint { font-size: 0.85rem; color: var(--primary-red); letter-spacing: 2px; font-weight: bold; animation: blink 1.5s infinite; }
         .login-box.active .click-hint { opacity: 0; max-height: 0; overflow: hidden; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .login-form-wrap { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; transform: translateY(-10px); }
         .login-box.active .login-form-wrap { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 15px; }
@@ -144,214 +145,95 @@
         .btn-login:hover { background: var(--primary-dark); }
         .btn-wa { background: #25D366; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 1.1rem; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
 
-        /* App Header Layout */
         .app-header {
-            background: rgba(15, 15, 15, 0.98); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between;
+            background: #0f0f0f; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between;
             align-items: center; border-bottom: 2px solid var(--primary-red); flex-shrink: 0; z-index: 100; gap: 10px;
         }
-        .app-header .header-left { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-muted); }
-        .app-header .header-left i { font-size: 1.8rem; color: var(--primary-red); }
-        .app-header .header-logo { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+        .app-header .header-left { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text-muted); }
+        .app-header .header-left i { font-size: 2rem; color: var(--primary-red); }
+        .app-header .header-logo { color: #fff; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
         .app-header .header-logo span { color: var(--primary-red); }
-        .app-header .header-right { display: flex; align-items: center; gap: 8px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
+        .app-header .header-right { display: flex; align-items: center; gap: 12px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
         
-        .btn-logout { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1.3rem; padding: 0; transition: transform 0.2s;}
-        .btn-logout:hover { transform: scale(1.1); }
-        .btn-chat-header, .btn-profile { background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
-        .btn-chat-header:hover, .btn-profile:hover { border-color: var(--primary-red); }
+        .btn-logout { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1.6rem; padding: 0 5px; transition: transform 0.2s; display: flex; align-items: center;}
+        .btn-logout:hover { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(230,0,0,0.6));}
+        .btn-chat-header, .btn-profile { background: transparent; border: 1px solid var(--border-color); border-radius: 4px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        .btn-chat-header:hover, .btn-profile:hover { background: rgba(255,255,255,0.1); border-color: #666; }
         .btn-chat-header { width: 35px; height: 35px; flex-shrink: 0;}
-        .btn-profile { padding: 6px 12px; font-size: 0.95rem; gap: 8px; font-weight: 600; white-space: nowrap; }
+        .btn-profile { padding: 6px 15px; font-size: 0.95rem; gap: 8px; font-weight: bold; white-space: nowrap; text-transform: uppercase; }
 
-        /* Responsive Dashboard Container */
-        #dashboardScreen { 
-            display: none; 
-            flex: 1; 
-            overflow-y: auto; 
-            position: relative; 
-            z-index: 10; 
-            -webkit-overflow-scrolling: touch;
-            padding: 20px;
-        }
-        .dashboard-wrapper { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            max-width: 1600px; 
-            margin: 0 auto; 
-            width: 100%;
-        }
+        #dashboardScreen { display: none; padding: 25px; flex: 1; overflow-y: auto; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
+        .dashboard-wrapper { display: flex; flex-direction: column; gap: 25px; max-width: 1600px; margin: 0 auto; min-height: 100%; }
+        .dashboard-main { display: flex; gap: 20px; flex: 1; align-items: stretch; }
+        .left-pane { flex: 0 0 28%; display: flex; flex-direction: column; gap: 20px; }
+        .right-pane { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); grid-auto-rows: minmax(150px, 1fr); gap: 18px; align-content: start; }
         
-        /* Auto-adjust Top Panes Layout */
-        .top-panes { 
-            display: flex; 
-            gap: 20px; 
-            width: 100%; 
-        }
-        .left-pane { 
-            flex: 0 0 280px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        .right-pane { 
-            flex: 1; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-            grid-auto-rows: minmax(110px, 1fr); 
-            gap: 15px; 
-            align-content: start; 
-        }
+        .bottom-pane { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; width: 100%; flex-shrink: 0; padding-bottom: 10px; }
 
-        /* Diagnostic Tiles */
         .tile {
-            background: rgba(25, 25, 25, 0.95); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; text-align: center; padding: 15px 10px; transition: transform 0.15s ease, background 0.2s, border-color 0.2s; transform: translateZ(0);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, #222222 0%, #151515 100%);
+            border: 1px solid #2a2a2a; 
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; text-align: center; padding: 20px 15px; 
+            transition: transform 0.15s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s; 
+            transform: translateZ(0); overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .tile:active { transform: scale(0.95); }
-        .tile:hover { background: rgba(35, 35, 35, 1); border-color: var(--primary-red); transform: scale(1.03); }
-        .tile i { font-size: 2.5rem; margin-bottom: 12px; color: #ddd; transition: color 0.2s; }
-        .tile:hover i { color: var(--primary-red); }
-        .tile .title { font-size: 0.9rem; font-weight: bold; color: #ccc; line-height: 1.2; word-wrap: break-word;}
+        .tile:active { transform: scale(0.97); }
+        .tile:hover { background: linear-gradient(145deg, #2a2a2a 0%, #1c1c1e 100%); border-color: #555; transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
         
+        /* Ikon & Teks Tile Utama */
+        .tile-content-wrapper { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none;}
+        .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 3rem; margin-bottom: 15px; color: #eeeeee; transition: color 0.2s; }
+        .tile:hover i:not(.tile-watermark):not(.badge-icon) { color: #fff; }
+        .tile .title { font-size: 0.9rem; font-weight: 800; color: #ddd; line-height: 1.3; text-transform: uppercase; word-wrap: break-word;}
+        
+        /* Watermark Background */
+        .tile-watermark {
+            position: absolute; right: -15px; bottom: -15px;
+            font-size: 8rem; color: #ffffff; opacity: 0.03;
+            z-index: 1; pointer-events: none;
+            transform: rotate(-10deg);
+        }
+
+        /* Gaya Khusus Red Tile (Left Pane) */
+        .tile.red-tile { 
+            background: linear-gradient(135deg, #ff0000 0%, #a60000 100%); 
+            border: none; flex: 1; min-height: 200px;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 5px 15px rgba(200,0,0,0.3);
+        }
+        .tile.red-tile:hover { filter: brightness(1.1); transform: translateY(-3px); box-shadow: inset 0 0 20px rgba(255,255,255,0.2), 0 8px 20px rgba(200,0,0,0.5); }
+        .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 4.5rem; color: #fff; margin-bottom: 20px;}
+        .tile.red-tile .title { font-size: 1.25rem; color: white; letter-spacing: 1px;}
+        .tile.red-tile .tile-watermark { opacity: 0.1; font-size: 12rem; right: -20px; bottom: -20px; }
+        
+        /* Gaya Khusus Bottom Tile */
+        .tile.bottom-tile { min-height: 120px; padding: 15px; }
+        .tile.bottom-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.2rem; margin-bottom: 12px; }
+        .tile.bottom-tile .title { font-size: 0.95rem; }
+        .tile.bottom-tile .tile-watermark { font-size: 6rem; right: -10px; bottom: -20px; opacity: 0.04;}
+
         .sortable-ghost { opacity: 0.4; border: 2px dashed #666 !important; background: rgba(0,0,0,0.8) !important; }
         
-        .tile.red-tile { background: rgba(200, 0, 0, 0.9); border: 1px solid var(--primary-dark); flex: 1; min-height: 140px; overflow: hidden; }
-        .tile.red-tile:hover { background: rgba(230, 0, 0, 1); border-color: #ff4d4d; }
-        .tile.red-tile i { font-size: 3.5rem; color: #fff; margin-bottom: 15px;}
-        
-        /* Shadow icon untuk visualisasi premium */
-        .tile.red-tile i.red-tile-bg-icon {
-            position: absolute !important;
-            bottom: -20px !important;
-            right: -20px !important;
-            font-size: 7.5rem !important;
-            color: rgba(255, 255, 255, 0.05) !important;
-            pointer-events: none;
-            transition: color 0.3s, transform 0.3s, opacity 0.3s;
-            z-index: 1;
-            margin-bottom: 0 !important;
-        }
-        .tile.red-tile:hover i.red-tile-bg-icon {
-            color: rgba(255, 255, 255, 0.12) !important;
-            transform: scale(1.15) translate(-5px, -5px);
-        }
-        .tile.red-tile i:not(.red-tile-bg-icon),
-        .tile.red-tile .title {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .tile.red-tile .title { font-size: 1.1rem; color: white; }
-        
-        .tile.add-tile { border: 2px dashed rgba(255,255,255,0.3); background: transparent; }
-        .tile.add-tile i { color: rgba(255,255,255,0.5); font-size: 2.5rem; margin: 0; }
-        .tile.add-tile:hover { border-color: var(--primary-red); }
+        .tile.add-tile { border: 2px dashed #444; background: transparent; box-shadow: none; }
+        .tile.add-tile i { color: #555; font-size: 3rem; margin: 0; }
+        .tile.add-tile:hover { border-color: var(--primary-red); background: rgba(230,0,0,0.05); }
         .tile.add-tile:hover i { color: var(--primary-red); }
-        .badge { position: absolute; top: -6px; right: -6px; background: var(--primary-red); color: white; border-radius: 4px; padding: 3px 6px; min-width: 20px; font-size: 0.8rem; font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+        
+        /* Badge & Akses Ikon */
+        .badge { position: absolute; top: -6px; right: -6px; background: var(--primary-red); color: white; border-radius: 4px; padding: 3px 6px; min-width: 20px; font-size: 0.8rem; font-weight: bold; z-index: 3; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+        .badge-icon { position: absolute; top: 12px; right: 15px; font-size: 1.4rem; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none;}
+        .badge-icon.crown { color: #ffd700; }
+        .badge-icon.star { color: #c0c0c0; }
 
-        /* Bottom Grid Layout */
-        .bottom-pane-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        .bottom-tile {
-            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.95) 100%);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            text-align: center;
-            padding: 22px 15px;
-            transition: transform 0.15s ease, background 0.2s, border-color 0.2s;
-            transform: translateZ(0);
-            min-height: 120px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        
-        .bottom-tile-bg-icon {
-            position: absolute !important;
-            bottom: -20px !important;
-            right: -20px !important;
-            font-size: 6rem !important;
-            color: rgba(255, 255, 255, 0.05) !important;
-            pointer-events: none;
-            transition: color 0.3s, transform 0.3s, opacity 0.3s;
-            z-index: 1;
-            margin-bottom: 0 !important;
-        }
-        
-        .bottom-tile:hover .bottom-tile-bg-icon {
-            color: rgba(230, 0, 0, 0.12) !important;
-            transform: scale(1.15) translate(-5px, -5px);
-        }
-        
-        .bottom-tile:active { transform: scale(0.96); }
-        .bottom-tile:hover {
-            background: linear-gradient(135deg, rgba(40, 40, 40, 0.98) 0%, rgba(20, 20, 20, 0.98) 100%);
-            border-color: var(--primary-red);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(230, 0, 0, 0.2);
-        }
-        .bottom-tile i {
-            font-size: 2.2rem;
-            margin-bottom: 12px;
-            color: #e0e0e0;
-            transition: color 0.2s, transform 0.2s;
-            z-index: 2;
-        }
-        .bottom-tile:hover i {
-            color: var(--primary-red);
-            transform: scale(1.1);
-        }
-        .bottom-tile .title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: #d1d1d1;
-            line-height: 1.3;
-            word-wrap: break-word;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            z-index: 2;
-        }
-        .bottom-tile:hover .title {
-            color: #fff;
-        }
-
-        /* Efek Sparkle Animasi */
-        @keyframes subtle-sparkle {
-            0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1.2) rotate(15deg); color: var(--primary-red); text-shadow: 0 0 10px rgba(230,0,0,0.8); }
-        }
-        .sparkle-decor {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.4);
-            animation: subtle-sparkle 2s infinite ease-in-out;
-            pointer-events: none;
-        }
-
-        /* Modal & Viewer Screen */
         .modal-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: var(--bg-color); z-index: 1000000; flex-direction: column; }
         .detail-header {
             background: rgba(15, 15, 15, 1); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: bold; border-bottom: 1px solid var(--border-color); z-index: 20; flex-shrink: 0;
         }
         .btn-back { background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; width: 38px; height: 38px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: 0.2s;}
         .btn-back:hover { background: var(--primary-red); border-color: var(--primary-red); }
-        .detail-content { flex: 1; padding: 20px; overflow-y: auto; color: #fff; background: transparent; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
+        .detail-content { flex: 1; padding: 25px; overflow-y: auto; color: #fff; background: transparent; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
 
-        /* HTML5 Flipbook */
         .flipbook-container { display: flex; flex-direction: column; width: 100%; height: 100%; background: #0a0a0a; position: relative; overflow: hidden; }
         .flipbook-toolbar { width: 100%; background: #1a1a1a; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-red); z-index: 10; box-sizing: border-box; flex-shrink: 0;}
         .flipbook-toolbar button { background: var(--primary-red); border: none; color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
@@ -369,7 +251,6 @@
         @keyframes flipPrevAnim { 0% { transform: rotateY(0deg); opacity: 1; } 50% { transform: rotateY(90deg); opacity: 0.6; } 51% { transform: rotateY(-90deg); opacity: 0.2; } 100% { transform: rotateY(0deg); opacity: 1; } }
         #fb-canvas { max-width: 100%; max-height: 100%; display: block; position: relative; z-index: 1;}
 
-        /* Admin Dashboard Control */
         .admin-layout { display: flex; flex: 1; overflow: hidden; background: transparent; }
         .admin-tabs-side { width: 220px; background: rgba(15, 15, 15, 1); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
         .admin-tab { padding: 16px 20px; color: var(--text-muted); cursor: pointer; border-left: 4px solid transparent; font-weight: bold; font-size: 1.05rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; transition: 0.15s; }
@@ -380,8 +261,7 @@
         .admin-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Dialog UI Elements */
-        .content-box { background: rgba(20, 20, 20, 1); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .content-box { background: rgba(28, 28, 30, 0.9); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; }
         .content-box h3 { margin-top: 0; color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;}
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .form-grid.full { grid-template-columns: 1fr; margin-bottom: 15px; }
@@ -440,7 +320,7 @@
 
         #detailScreen.immersive-mode .detail-header {
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
-            transform: translateX(100%);
+            transform: translateX(100%); /* MENGHILANG KE SAMPING KANAN */
             box-shadow: 0 5px 20px rgba(0,0,0,0.8);
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
         }
@@ -478,133 +358,64 @@
         .smart-zoom-ctrl button:hover { background: var(--primary-red); border-color: var(--primary-red); transform: scale(1.1); box-shadow: 0 0 15px rgba(230,0,0,0.5);}
         .smart-zoom-ctrl span { color: #fff; font-size: 0.95rem; font-weight: bold; min-width: 50px; text-align: center; letter-spacing: 1px;}
 
-        /* --- MEDIA QUERIES UNTUK OTOMATIS MENGIKUTI PERANGKAT --- */
-
-        /* 1. Layar Desktop Sedang & Besar (Widescreen Console Mode) */
-        @media (min-width: 901px) {
-            .dashboard-wrapper {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-            .top-panes {
-                flex: 1;
-                min-height: 0; 
-            }
-        }
-
-        /* 2. Layar Medium (Tablet / IPad / Foldables / Laptop Kecil) */
-        @media (max-width: 1024px) {
-            .left-pane {
-                flex: 0 0 240px;
-            }
-            .right-pane {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                gap: 12px;
-            }
-            .bottom-pane-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 12px;
-            }
-        }
-
-        /* 3. Layar Tablet Portrait / Layar HP Besar (Lebar <= 900px) */
+        /* TABLET & SMALL LAPTOP (Max 900px) */
         @media (max-width: 900px) { 
-            #dashboardScreen {
-                padding: 15px;
-            }
-            .dashboard-wrapper { 
-                flex-direction: column; 
-                gap: 15px;
-            } 
-            .top-panes { 
-                flex-direction: column; 
-                gap: 15px;
-            }
-            .left-pane { 
-                flex: 0 0 auto; 
-                display: grid; 
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-                gap: 12px; 
-            } 
-            .right-pane {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-                gap: 12px;
-            }
-            .bottom-pane-grid { 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 12px; 
-            }
+            .dashboard-main { flex-direction: column; } 
+            .left-pane { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; } 
         }
 
-        /* 4. Layar Smartphone Portrait Umum (Lebar <= 768px) */
+        /* TAB KECIL & HP BESAR (Max 768px) */
         @media (max-width: 768px) {
             .app-header { flex-wrap: wrap; padding: 10px 15px; }
             .header-logo { order: -1; flex: 1 1 100%; text-align: center; margin-bottom: 10px; font-size: 1.8rem !important; }
-            
             .admin-layout { flex-direction: column; } 
             .admin-tabs-side { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; overflow-x: auto; white-space: nowrap; }
             .admin-tab { border-left: none; border-bottom: 4px solid transparent; padding: 14px 20px; flex: 1; justify-content: center; font-size: 0.95rem;} 
             .admin-tab.active { border-bottom-color: var(--primary-red); }
-            
             .form-grid { grid-template-columns: 1fr; gap: 12px; } 
-            .tile { padding: 12px 8px; } 
-            .tile i { font-size: 2rem; margin-bottom: 8px; } 
-            .tile .title { font-size: 0.8rem; } 
-            
-            .tile.red-tile { padding: 15px 10px; min-height: 110px;} 
-            .tile.red-tile i { font-size: 2.8rem; }
-            
+            #dashboardScreen { padding: 15px; } 
+            .right-pane { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+            .tile { padding: 15px 10px; } .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.2rem; margin-bottom: 8px; } .tile .title { font-size: 0.85rem; } .tile.red-tile { padding: 20px 15px; min-height: 150px; } .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 3rem; }
             .login-box { width: 92%; padding: 25px 20px; }
             .login-box.active { padding: 30px 20px; }
-            
             .detail-header { padding: 10px 15px; font-size: 1.05rem; }
             .html-preview-split { flex-direction: column; overflow-y: auto; }
             
-            .bottom-tile { padding: 15px 10px; min-height: 100px; }
-            .bottom-tile i { font-size: 1.9rem; margin-bottom: 8px; }
-            .bottom-tile .title { font-size: 0.85rem; }
+            .bottom-pane { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .tile.bottom-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 1.8rem; }
+            .tile.bottom-tile .title { font-size: 0.85rem; }
         }
 
-        /* 5. Layar HP Ultra Kecil / Rasio Layar Panjang (Lebar <= 480px) */
+        /* SMARTPHONE / HP KECIL (Max 480px) */
         @media (max-width: 480px) {
-            .header-left span { display: none; }
-            .header-left b { font-size: 0.8rem; }
+            .header-left span { display: none; } 
+            .header-left b { font-size: 0.85rem; }
             .header-logo { font-size: 1.5rem !important; margin-bottom: 8px;}
             .btn-profile { padding: 6px 10px; font-size: 0.85rem; }
             .btn-chat-header { width: 32px; height: 32px; }
-            .btn-logout { font-size: 1.2rem; }
+            .btn-logout { font-size: 1.4rem; }
+            
+            .left-pane { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .right-pane { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+            
+            .tile { padding: 12px 8px; }
+            .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2rem; margin-bottom: 8px; }
+            .tile .title { font-size: 0.8rem; }
+            
+            .tile.red-tile { padding: 15px 10px; min-height: 120px; }
+            .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.5rem; margin-bottom: 8px;}
+            .tile.red-tile .title { font-size: 1rem; }
+            
+            .bottom-pane { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .tile.bottom-tile { min-height: 90px; padding: 10px; }
             
             #dashboardScreen { padding: 10px; }
-            .left-pane { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-            .right-pane { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; }
-            
-            .tile { padding: 10px 5px; }
-            .tile i { font-size: 1.8rem; margin-bottom: 6px; }
-            .tile .title { font-size: 0.75rem; }
-            
-            .tile.red-tile { padding: 12px 8px; min-height: 90px; }
-            .tile.red-tile i { font-size: 2.2rem; margin-bottom: 8px;}
-            .tile.red-tile .title { font-size: 0.95rem; }
-            
             .custom-dialog-box { padding: 15px; width: 95%; }
             .chat-bubble { max-width: 90%; font-size: 0.95rem; }
 
             .smart-zoom-ctrl { bottom: 20px; right: 50%; transform: translate(50%, 30px) scale(0.9); padding: 6px 12px; gap: 8px; }
             #detailScreen.immersive-mode .smart-zoom-ctrl.visible { transform: translate(50%, 0) scale(1); }
             .smart-zoom-ctrl button { width: 35px; height: 35px; font-size: 1rem; }
-            
-            .bottom-pane-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .bottom-tile { padding: 12px 8px; min-height: 85px; }
-            .bottom-tile i { font-size: 1.6rem; margin-bottom: 6px; }
-            .bottom-tile .title { font-size: 0.75rem; }
-        }
-
-        /* 6. Adaptasi Layar Sentuh Drag-and-Drop */
-        .sortable-fallback {
-            opacity: 0.9 !important;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
         }
     </style>
 </head>
@@ -615,7 +426,6 @@
 
 <div id="BloggerAppContainer">
     
-    <!-- Welcome Splash Screen -->
     <div id="welcomeScreen">
         <div class="splash-content">
             <div class="splash-logo-wrapper">
@@ -632,13 +442,12 @@
         <div class="splash-footer">V2.0.0 SECURE BUILD</div>
     </div>
 
-    <!-- Application Top Header -->
     <div class="app-header" id="mainHeader" style="display: none;">
         <div class="header-left">
             <i class="fas fa-microchip"></i>
             <div>
-                <b id="displayHeaderModel">X-431 PAD9 LINK</b><br>
-                <span id="displayHeaderSN" style="font-size: 0.8rem; color: var(--text-muted);">S.N:98760000003 V8.00.027</span>
+                <b id="displayHeaderModel" style="font-size: 1.1rem; color:#fff; letter-spacing:1px; font-weight:800;">DR CAR DATA</b><br>
+                <span id="displayHeaderSN" style="font-size: 0.75rem; color: var(--text-muted); font-weight:600;">REPAIR, MAINTENANCE, and MODIFICATION</span>
             </div>
         </div>
         <div class="header-logo" id="displayHeaderLogo">Dr.<span>Mesin</span></div>
@@ -649,12 +458,11 @@
             </div>
             <button class="btn-chat-header" id="btnAdminHeader" onclick="openAdminPanel()" title="Admin Panel" style="display: none; margin-right:5px;"><i class="fas fa-cog"></i></button>
             <button class="btn-chat-header" onclick="openChatScreen()" title="Secure Comms"><i class="fas fa-comment-dots"></i></button>
-            <button class="btn-profile" onclick="openProfile()" title="Status Member"><i class="fas fa-user-astronaut"></i> <span id="headerUserText">User</span></button>
+            <button class="btn-profile" onclick="openProfile()" title="Status Member"><i class="fas fa-user-astronaut"></i> <span id="headerUserText">DRMESIN03</span></button>
             <button class="btn-logout" onclick="logout()" title="Logout"><i class="fas fa-power-off"></i></button>
         </div>
     </div>
 
-    <!-- Login Screen -->
     <div id="loginScreen" class="center-screen" style="display: none;">
         <div class="login-box" id="loginBox">
             <div class="login-logo-container" onclick="revealLogin()" title="Tap to Initialize">
@@ -665,23 +473,17 @@
                 <h2>SECURE ACCESS</h2>
                 <div class="input-group">
                     <i class="fas fa-user"></i>
-                    <!-- Sembunyikan kredensial melalui non-cache -->
-                    <input type="text" id="username" placeholder="System ID" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input type="text" id="username" placeholder="System ID">
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <!-- Tipe password untuk menyembunyikan tulisan -->
-                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" style="padding-right: 45px;">
-                    <button type="button" onclick="togglePasswordVisibility('password', 'toggleLoginPassIcon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
-                        <i id="toggleLoginPassIcon" class="fas fa-eye"></i>
-                    </button>
+                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)">
                 </div>
                 <button class="btn-login" onclick="prosesLogin()"><i class="fas fa-sign-in-alt"></i> INITIALIZE LOGIN</button>
             </div>
         </div>
     </div>
 
-    <!-- Expired Screen -->
     <div id="expiredScreen" class="center-screen" style="display: none;">
         <div class="login-box" style="border-color: var(--primary-red); display: block; max-height: unset; opacity: 1;">
             <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--primary-red); margin-bottom: 15px;"></i>
@@ -693,18 +495,16 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Screen -->
     <div id="dashboardScreen">
         <div class="dashboard-wrapper">
-            <div class="top-panes">
+            <div class="dashboard-main">
                 <div class="left-pane" id="leftPaneContainer"></div>
                 <div class="right-pane" id="rightPaneContainer"></div>
             </div>
-            <div class="bottom-pane-grid" id="bottomPaneContainer"></div>
+            <div class="bottom-pane" id="bottomPaneContainer"></div>
         </div>
     </div>
 
-    <!-- Detail / Viewer Modal Screen -->
     <div id="detailScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="goBack()"><i class="fas fa-chevron-left"></i></button>
@@ -726,7 +526,6 @@
         <div class="detail-content" id="detailContent"></div>
     </div>
 
-    <!-- User Profile Screen -->
     <div id="profileScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('profileScreen')"><i class="fas fa-times"></i></button>
@@ -749,7 +548,6 @@
         </div>
     </div>
 
-    <!-- Secure Comm Chat Screen -->
     <div id="chatScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('chatScreen')"><i class="fas fa-chevron-left"></i></button>
@@ -765,7 +563,6 @@
         </div>
     </div>
 
-    <!-- Admin Panel Screen -->
     <div id="adminScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('adminScreen')"><i class="fas fa-times"></i></button>
@@ -793,16 +590,7 @@
                         <input type="hidden" id="formUserId">
                         <div class="form-grid">
                             <div class="form-group"><label>System ID (Username)</label><input type="text" id="formUserUsername" class="form-control" placeholder="Ketik ID unik..."></div>
-                            <!-- TYPE DIUBAH KE PASSWORD AGAR TIDAK TERBACA KETIKA DI-INSPECT -->
-                            <div class="form-group">
-                                <label>Access Key (Password)</label>
-                                <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                                    <input type="password" id="formUserPassword" class="form-control" placeholder="Ketik password..." autocomplete="new-password" style="padding-right: 45px; width: 100%;">
-                                    <button type="button" onclick="togglePasswordVisibility('formUserPassword', 'toggleAdminPassIcon')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
-                                        <i id="toggleAdminPassIcon" class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
+                            <div class="form-group"><label>Access Key (Password)</label><input type="text" id="formUserPassword" class="form-control" placeholder="Ketik password..."></div>
                             <div class="form-group"><label>Nama Lengkap</label><input type="text" id="formUserNama" class="form-control" placeholder="Nama mekanik / admin..."></div>
                             <div class="form-group"><label>Alamat Email</label><input type="email" id="formUserEmail" class="form-control" placeholder="Opsional..."></div>
                             <div class="form-group"><label>Nomor Kontak / WA</label><input type="text" id="formUserPhone" class="form-control" placeholder="Misal: 62812..."></div>
@@ -863,8 +651,8 @@
                         <div class="content-box">
                             <div class="form-grid">
                                 <div class="form-group"><label>Main Logo Text</label><input type="text" id="formHeaderLogo" class="form-control" placeholder="e.g. Dr.Mesin"></div>
-                                <div class="form-group"><label>Device Model Identifier</label><input type="text" id="formHeaderModel" class="form-control" placeholder="e.g. X-431 PAD9 LINK"></div>
-                                <div class="form-group"><label>Hardware S.N & Firmware</label><input type="text" id="formHeaderSN" class="form-control" placeholder="e.g. S.N:98760000003 V8.00.027"></div>
+                                <div class="form-group"><label>Device Model Identifier</label><input type="text" id="formHeaderModel" class="form-control" placeholder="e.g. DR CAR DATA"></div>
+                                <div class="form-group"><label>Hardware S.N & Firmware</label><input type="text" id="formHeaderSN" class="form-control" placeholder="e.g. REPAIR, MAINTENANCE..."></div>
                                 <div class="form-group"><label>Nomor WhatsApp Admin</label><input type="text" id="formHeaderWA" class="form-control" placeholder="e.g. 62812... (Tanpa +)"></div>
                             </div>
                             <div style="background: rgba(230,0,0,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-red); margin-top: 15px;">
@@ -881,7 +669,6 @@
         </div>
     </div>
 
-    <!-- Create/Edit Module Form -->
     <div id="appFormContainer">
         <div class="content-box">
             <h4 id="appFormTitle" style="margin-top:0; color:#fff; font-size:1.3rem; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:20px;">Create New Node</h4>
@@ -891,14 +678,7 @@
                 <div class="form-group"><label>Module Name (Judul)</label><input type="text" id="formAppTitle" class="form-control" placeholder="e.g. REPAIR MANUAL..."></div>
                 <div class="form-group"><label>Notification Badge (Label)</label><input type="text" id="formAppBadge" class="form-control" placeholder="e.g. HOT, NEW, atau 145"></div>
                 <div class="form-group"><label>Parent Node (Lokasi Folder)</label><select id="formAppParent" class="form-control" onchange="toggleContentType()"><option value="">-- ROOT DASHBOARD --</option></select></div>
-                <div class="form-group" id="typeGroup">
-                    <label>Visual Style (Khusus Root)</label>
-                    <select id="formAppType" class="form-control">
-                        <option value="small-dark">Standard Grid (Right Pane)</option>
-                        <option value="large-red">Primary Action (Left Pane)</option>
-                        <option value="bottom-tab">Bottom Tab (Footer Row)</option>
-                    </select>
-                </div>
+                <div class="form-group" id="typeGroup"><label>Visual Style (Khusus Root)</label><select id="formAppType" class="form-control"><option value="small-dark">Standard Grid (Right Pane)</option><option value="large-red">Primary Action (Left Pane)</option><option value="bottom-tab">Bottom Tab (Lebar Bawah)</option></select></div>
                 <div class="form-group">
                     <label>Module Type / Action</label>
                     <select id="formAppContentType" class="form-control" onchange="toggleContentType()">
@@ -933,7 +713,6 @@
         </div>
     </div>
 
-    <!-- Context Menu Admin -->
     <div id="adminContextMenu">
         <div class="context-menu-item" id="ctxAdd" onclick="quickCreateNode()"><i class="fas fa-folder-plus"></i> Create New Node Here</div>
         <div class="context-menu-item" id="ctxEdit" onclick="quickEditNode()" style="display:none; border-top:1px solid var(--border-color);"><i class="fas fa-edit"></i> Edit Node / Rename</div>
@@ -946,7 +725,6 @@
         <div class="context-menu-item" onclick="closeContextMenu()" style="border-top:1px solid var(--border-color);"><i class="fas fa-times"></i> Cancel</div>
     </div>
 
-    <!-- Dialog Popups -->
     <div id="customDialogOverlay">
         <div class="custom-dialog-box">
             <i id="dialogIcon" class="fas fa-exclamation-triangle" style="font-size:3.5rem; margin-bottom:15px;"></i>
@@ -959,12 +737,10 @@
         </div>
     </div>
 
-    <!-- Processing Overlay Spinner -->
     <div id="loadingOverlay">
         <div><div class="spinner"></div><p style="margin-top: 15px; font-weight: bold; color: var(--primary-red); letter-spacing: 2px;">PROCESSING...</p></div>
     </div>
 
-    <!-- Live Preview Modal -->
     <div id="htmlPreviewerModal" class="modal-screen" style="z-index: 9999999; background: rgba(10,10,10,0.98);">
         <div class="detail-header" style="justify-content: space-between;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -995,16 +771,10 @@
 
 <script>
 const IS_PREVIEW = false; 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxiyQ9olvJ7Aou2hsX0TfexvN12KsqD3DdMkGe5e-_iBrCs2m2eqtGpGOy7_C4rYTjc/exec"; 
 
-const iconList = [
-    "fa-car", "fa-motorcycle", "fa-truck", "fa-bus", "fa-wrench", "fa-tools", "fa-cog", "fa-cogs",
-    "fa-microchip", "fa-tachometer-alt", "fa-battery-full", "fa-plug", "fa-bolt", "fa-oil-can", "fa-gas-pump", "fa-temperature-high",
-    "fa-shield-alt", "fa-key", "fa-lock", "fa-unlock-alt", "fa-wifi", "fa-broadcast-tower", "fa-satellite-dish", "fa-laptop",
-    "fa-folder", "fa-folder-open", "fa-file-alt", "fa-file-pdf", "fa-file-invoice", "fa-database", "fa-book", "fa-road",
-    "fa-network-wired", "fa-sitemap", "fa-sync-alt", "fa-history", "fa-chart-bar", "fa-chart-line", "fa-clipboard-list", "fa-tasks",
-    "fa-video", "fa-play-circle", "fa-headphones", "fa-headset", "fa-phone-alt", "fa-envelope", "fa-user", "fa-users-cog"
-];
+// SENSITIVE DATA HIDDEN (BASE64 ENCODED)
+const _0xGas = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4aXlROW9sdko3QW91MmhzWDBUZmV4dk4xMktzcUQzRGRNa0dlNWUtX2lCckNzMm0yZXF0R3BHT3k3X0M0cllUamMvZXhlYw==";
+const GAS_URL = atob(_0xGas); 
 
 let deviceId = localStorage.getItem('drcardata_device_id');
 if (!deviceId) {
@@ -1012,23 +782,21 @@ if (!deviceId) {
     localStorage.setItem('drcardata_device_id', deviceId);
 }
 let deviceCheckInterval = null;
+
 let currentUser = null;
 let menuStack = []; 
 let isDraggingTile = false; 
-let appsData = []; 
-let usersData = []; 
-let headerConfig = {}; 
-let currentZoomLevel = 1;
-let appDictionary = {};
 
-let chatMessagesData = [];
+let appsData = []; let usersData = []; let headerConfig = {}; 
+
+window.chatMessagesData = [];
 try {
     const stored = localStorage.getItem('drcardata_chat_history');
-    if (stored) chatMessagesData = JSON.parse(stored);
+    if (stored) window.chatMessagesData = JSON.parse(stored);
 } catch(e){}
 
-if (chatMessagesData.length === 0) {
-    chatMessagesData = [{ 
+if (window.chatMessagesData.length === 0) {
+    window.chatMessagesData = [{ 
         sender: 'system', 
         name: 'SYSTEM', 
         text: 'Secure communication channel established. End-to-end local encryption active.', 
@@ -1036,28 +804,12 @@ if (chatMessagesData.length === 0) {
     }];
 }
 
-let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
-
-function togglePasswordVisibility(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    if (input && icon) {
-        if (input.type === "password") {
-            input.type = "text";
-            icon.className = "fas fa-eye-slash";
-            icon.style.color = "var(--primary-red)";
-        } else {
-            input.type = "password";
-            icon.className = "fas fa-eye";
-            icon.style.color = "var(--text-muted)";
-        }
-    }
-}
+let currentZoomLevel = 1;
 
 function changeZoom(delta) {
     currentZoomLevel += delta;
     if (currentZoomLevel < 0.5) currentZoomLevel = 0.5;
-    if (currentZoomLevel > 5.0) currentZoomLevel = 5.0;
+    if (currentZoomLevel > 5.0) currentZoomLevel = 5.0; 
     applyZoom();
 }
 
@@ -1068,17 +820,18 @@ function resetZoom() {
 
 function applyZoom() {
     const detailContent = document.getElementById('detailContent');
-    const target = detailContent.firstElementChild;
+    const target = detailContent.firstElementChild; 
     const label = document.getElementById('zoomLabel');
     
     if(target && label) {
         label.innerText = Math.round(currentZoomLevel * 100) + '%';
+        
         target.style.zoom = currentZoomLevel;
-        target.style.transformOrigin = 'top left';
+        target.style.transformOrigin = 'top left'; 
         
         if (currentZoomLevel > 1) {
             detailContent.style.overflow = 'auto';
-            detailContent.style.touchAction = 'pan-x pan-y'; 
+            detailContent.style.touchAction = 'pan-x pan-y';
         } else {
             detailContent.style.overflow = 'hidden';
             detailContent.style.touchAction = 'none';
@@ -1097,6 +850,7 @@ function applyZoom() {
     }
 }
 
+let appDictionary = {}; 
 function updateAppDictionary() {
     appDictionary = {};
     for (let i = 0, len = appsData.length; i < len; i++) {
@@ -1116,6 +870,8 @@ function canAccess(app) {
     
     return false;
 }
+
+let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
 
 function initHTML5Flipbook(app) {
     let rawUrl = app.content.trim(); let pdfUrl = rawUrl;
@@ -1292,6 +1048,17 @@ function closeCustomDialog() { document.getElementById('customDialogOverlay').st
 document.getElementById('btnDialogOk').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(true); dialogCallback = null; } };
 document.getElementById('btnDialogCancel').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(false); dialogCallback = null; } };
 
+const iconList = [
+    'fa-microchip', 'fa-network-wired', 'fa-wrench', 'fa-sync-alt', 'fa-database', 'fa-car', 'fa-oil-can', 'fa-car-crash',
+    'fa-file-pdf', 'fa-play-circle', 'fa-globe', 'fa-cogs', 'fa-user', 'fa-users', 'fa-laptop', 'fa-mobile-alt',
+    'fa-server', 'fa-cloud', 'fa-shield-alt', 'fa-lock', 'fa-key', 'fa-tools', 'fa-toolbox', 'fa-car-battery',
+    'fa-plug', 'fa-charging-station', 'fa-gas-pump', 'fa-tachometer-alt', 'fa-thermometer-half', 'fa-fan', 'fa-bolt', 'fa-lightbulb',
+    'fa-video', 'fa-camera', 'fa-images', 'fa-map-marker-alt', 'fa-route', 'fa-chart-line', 'fa-clipboard-list', 'fa-tasks',
+    'fa-calendar-alt', 'fa-clock', 'fa-calculator', 'fa-book', 'fa-folder', 'fa-save', 'fa-edit', 'fa-plus',
+    'fa-check', 'fa-exclamation-triangle', 'fa-info-circle', 'fa-search', 'fa-home', 'fa-satellite-dish', 'fa-wifi', 'fa-bluetooth',
+    'fa-power-off', 'fa-cog', 'fa-link', 'fa-qrcode', 'fa-comment-dots', 'fa-comments', 'fa-headset', 'fa-desktop', 'fa-laptop-house', 'fa-file-alt'
+];
+
 document.addEventListener("DOMContentLoaded", function() {
     renderIconGrid(); 
     
@@ -1330,8 +1097,10 @@ function applyHeaderConfig() {
     let logoHtml = headerConfig.logoText || "Dr.Mesin";
     if(logoHtml.toLowerCase().includes('mesin')) { logoHtml = logoHtml.replace(/mesin/i, "<span>$&</span>"); }
     document.getElementById('displayHeaderLogo').innerHTML = logoHtml;
-    document.getElementById('displayHeaderModel').innerText = headerConfig.modelText || "SCANNER";
-    document.getElementById('displayHeaderSN').innerText = headerConfig.snText || "";
+    
+    // Setting defaults to match reference image if not set
+    document.getElementById('displayHeaderModel').innerText = headerConfig.modelText || "DR CAR DATA";
+    document.getElementById('displayHeaderSN').innerText = headerConfig.snText || "REPAIR, MAINTENANCE, and MODIFICATION";
 }
 
 function getDaysRemaining(expDateStr) {
@@ -1341,14 +1110,8 @@ function getDaysRemaining(expDateStr) {
 }
 
 async function prosesLogin() {
-    const userEl = document.getElementById('username');
-    const passEl = document.getElementById('password');
-    const user = userEl.value.trim();
-    const pass = passEl.value.trim();
-    
-    // Sembunyikan kredensial langsung dari DOM agar tidak bisa di-inspect element
-    userEl.value = '';
-    passEl.value = '';
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
     
     if(!user || !pass) return appAlert("System ID dan Password wajib diisi!", "Authentication Error", "error");
     if(!IS_PREVIEW && (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "")) return appAlert("Sistem belum dihubungkan ke Database.", "Warning", "warning");
@@ -1397,6 +1160,14 @@ function loginSuccess(userData) {
     applyHeaderConfig(); 
     renderDynamicApps(); 
 
+    if (typeof window.initFirebaseForChat === 'function') {
+        window.initFirebaseForChat().then(success => {
+            if (success) {
+                window.listenToGlobalChat();
+            }
+        });
+    }
+
     clearInterval(deviceCheckInterval);
     deviceCheckInterval = setInterval(async () => {
         if (currentUser) {
@@ -1406,7 +1177,7 @@ function loginSuccess(userData) {
                 logout(true); 
             }
         }
-    }, 120000); 
+    }, 120000);
 
     if (headerConfig.globalNotification && headerConfig.globalNotification.trim() !== '') {
         setTimeout(() => { appAlert(headerConfig.globalNotification, "PENGUMUMAN SISTEM", "info"); }, 500);
@@ -1414,7 +1185,7 @@ function loginSuccess(userData) {
 }
 
 function saveNewOrder(container) {
-    const tiles = container.querySelectorAll('.tile[data-id], .bottom-tile[data-id]');
+    const tiles = container.querySelectorAll('.tile[data-id]');
     const newOrderIds = Array.from(tiles).map(t => t.getAttribute('data-id'));
     if (newOrderIds.length === 0) return;
 
@@ -1447,45 +1218,37 @@ function renderDynamicApps() {
         
         let accessIcon = '';
         let reqAccess = (app.type && app.type.includes('_')) ? app.type.split('_')[1] : '';
-        if (currentUser && currentUser.role === 'Admin') {
-            if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
-            if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+        
+        // Cek reqAccess atau Role User untuk menampilkan Crown/Star
+        if (reqAccess === 'PRO' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'PRO')) {
+            accessIcon = `<i class="fas fa-star badge-icon star"></i>`;
+        }
+        if (reqAccess === 'ULTIMATE' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'ULTIMATE')) {
+            accessIcon = `<i class="fas fa-crown badge-icon crown"></i>`;
         }
 
         let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
+        const badgeHtml = app.badge ? `<div class="badge">${app.badge}</div>` : '';
+        
+        // Tambahkan elemen watermark
+        let watermarkHtml = `<i class="fas ${app.icon} tile-watermark"></i>`;
         
         if(baseType === 'large-red') {
-            leftHtml += `
-                <div class="tile red-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">
-                    ${accessIcon}
-                    <i class="fas ${app.icon} red-tile-bg-icon"></i>
-                    <i class="fas ${app.icon}"></i>
-                    <div class="title">${app.title.replace('&', '&<br>')}</div>
-                </div>
-            `;
+            leftHtml += `<div class="tile red-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${watermarkHtml}${accessIcon}
+                            <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title.replace('&', '&<br>')}</div></div>
+                         </div>`;
         } else if (baseType === 'bottom-tab') {
-            let sparkleHtml = '';
-            if (app.title.toUpperCase().includes('SETTINGH') || app.title.toUpperCase().includes('SETTING')) {
-                sparkleHtml = `<span class="sparkle-decor"><i class="fas fa-sparkles"></i></span>`;
-            }
-            bottomHtml += `
-                <div class="bottom-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">
-                    ${accessIcon}
-                    ${sparkleHtml}
-                    <i class="fas ${app.icon} bottom-tile-bg-icon"></i>
-                    <i class="fas ${app.icon}"></i>
-                    <div class="title">${app.title}</div>
-                </div>
-            `;
+            bottomHtml += `<div class="tile bottom-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${watermarkHtml}${accessIcon}${badgeHtml}
+                             <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>
+                           </div>`;
         } else {
-            const badgeHtml = app.badge ? `<div class="badge">${app.badge}</div>` : '';
-            rightHtml += `<div class="tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}${badgeHtml}<i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>`;
+            rightHtml += `<div class="tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}${badgeHtml}
+                            <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>
+                          </div>`;
         }
     }
 
-    if(currentUser && currentUser.role === 'Admin') { 
-        rightHtml += `<div class="tile add-tile" onclick="openAdminPanel()"><i class="fas fa-plus"></i></div>`; 
-    }
+    if(currentUser && currentUser.role === 'Admin') { rightHtml += `<div class="tile add-tile" onclick="openAdminPanel()"><div class="tile-content-wrapper"><i class="fas fa-plus"></i></div></div>`; }
 
     leftPane.innerHTML = leftHtml;
     rightPane.innerHTML = rightHtml;
@@ -1497,7 +1260,6 @@ function renderDynamicApps() {
             onStart: function() { isDraggingTile = true; },
             onEnd: function(evt) { setTimeout(() => isDraggingTile = false, 50); if(evt.oldIndex !== evt.newIndex) saveNewOrder(rightPane); }
         });
-        
         Sortable.create(bottomPane, {
             animation: 150, delay: 150, delayOnTouchOnly: true, ghostClass: 'sortable-ghost', fallbackOnBody: true,
             onStart: function() { isDraggingTile = true; },
@@ -1580,7 +1342,7 @@ function closeModal(id) {
 
 function renderChatMessages() {
     const container = document.getElementById('chatMessages');
-    container.innerHTML = chatMessagesData.map(msg => {
+    container.innerHTML = window.chatMessagesData.map(msg => {
         const isMe = currentUser && msg.sender === currentUser.username;
         const bubbleClass = isMe ? 'chat-sent' : 'chat-recv';
         const senderName = isMe ? 'ANDA' : msg.name.toUpperCase();
@@ -1604,35 +1366,55 @@ function renderChatMessages() {
 
 function handleChatEnter(e) { if (e.key === 'Enter') sendChatMessage(); }
 
-function sendChatMessage() {
+async function sendChatMessage() {
     const input = document.getElementById('chatInput'); 
     const text = input.value.trim();
     if(!text || !currentUser) return;
     
-    const now = new Date(); 
-    const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-    
-    chatMessagesData.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
     input.value = ''; 
     
-    localStorage.setItem('drcardata_chat_history', JSON.stringify(chatMessagesData));
-    
-    renderChatMessages();
+    if (window.fbDb) {
+        // Mode Firebase Global (Real-time)
+        await window.sendChatMsgToFirebase(currentUser.username, currentUser.nama, text);
+    } else {
+        // Fallback Mode Lokal (Jika Firebase belum siap)
+        const now = new Date(); 
+        const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+        window.chatMessagesData.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
+        
+        localStorage.setItem('drcardata_chat_history', JSON.stringify(window.chatMessagesData));
+        renderChatMessages();
+    }
 }
 
 function clearChatHistory() {
-    appConfirm("Bersihkan seluruh riwayat obrolan di perangkat ini?", function(yes) {
-        if(yes) {
-            chatMessagesData = [{ 
-                sender: 'system', 
-                name: 'SYSTEM', 
-                text: 'Riwayat obrolan pada perangkat ini telah dibersihkan.', 
-                time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
-            }];
-            localStorage.setItem('drcardata_chat_history', JSON.stringify(chatMessagesData));
-            renderChatMessages();
+    if (window.fbDb) {
+        if (currentUser && currentUser.role !== 'Admin') {
+            appAlert("Akses Ditolak: Hanya Admin yang memiliki izin untuk menghapus riwayat obrolan global.", "Access Denied", "error");
+            return;
         }
-    });
+        appConfirm("Bersihkan seluruh riwayat obrolan global dari server untuk semua member?", async function(yes) {
+            if (yes) {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                await window.clearGlobalChatFirebase();
+                document.getElementById('loadingOverlay').style.display = 'none';
+                appAlert("Obrolan global telah dibersihkan.", "Berhasil", "success");
+            }
+        });
+    } else {
+        appConfirm("Bersihkan seluruh riwayat obrolan di perangkat ini?", function(yes) {
+            if(yes) {
+                window.chatMessagesData = [{ 
+                    sender: 'system', 
+                    name: 'SYSTEM', 
+                    text: 'Riwayat obrolan pada perangkat ini telah dibersihkan.', 
+                    time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
+                }];
+                localStorage.setItem('drcardata_chat_history', JSON.stringify(window.chatMessagesData));
+                renderChatMessages();
+            }
+        });
+    }
 }
 
 function goBack() {
@@ -1666,13 +1448,17 @@ function buildContentHtml(app) {
             
             let accessIcon = '';
             let reqAccess = (c.type && c.type.includes('_')) ? c.type.split('_')[1] : '';
-            if (currentUser && currentUser.role === 'Admin') {
-                if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
-                if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+            if (reqAccess === 'PRO' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'PRO')) {
+                accessIcon = `<i class="fas fa-star badge-icon star" style="top:8px; right:8px; font-size:1.1rem;"></i>`;
+            }
+            if (reqAccess === 'ULTIMATE' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'ULTIMATE')) {
+                accessIcon = `<i class="fas fa-crown badge-icon crown" style="top:8px; right:8px; font-size:1.1rem;"></i>`;
             }
 
             const badgeHtml = c.badge ? `<div class="badge" style="top:-5px;right:-5px;">${c.badge}</div>` : '';
-            html += `<div class="tile" data-id="${c.id}" onclick="openMenu('${c.id}')">${accessIcon}${badgeHtml}<i class="fas ${c.icon}"></i><div class="title">${c.title}</div></div>`;
+            html += `<div class="tile" data-id="${c.id}" onclick="openMenu('${c.id}')">${accessIcon}${badgeHtml}
+                        <div class="tile-content-wrapper"><i class="fas ${c.icon}"></i><div class="title">${c.title}</div></div>
+                     </div>`;
         }
         if(count === 0) return `<div class="content-box" style="text-align:center; color:var(--text-muted);"><i class="fas fa-folder-open" style="font-size:3rem; margin-bottom:15px; opacity:0.5;"></i><br>Directory empty or access denied.</div>`;
         return html + `</div>`;
@@ -1757,6 +1543,7 @@ function renderCurrentMenuState() {
         }).join(' <i class="fas fa-angle-right" style="color:var(--primary-red); font-size:0.9rem; margin:0 8px;"></i> ');
         
         document.getElementById('detailTitle').innerHTML = breadcrumbHtml;
+        
         const detailContent = document.getElementById('detailContent');
         
         currentZoomLevel = 1;
@@ -1766,6 +1553,7 @@ function renderCurrentMenuState() {
         detailContent.style.transform = 'none';
 
         detailContent.innerHTML = buildContentHtml(currentApp);
+        
         const zoomCtrl = document.getElementById('smartZoomCtrl');
 
         if (['pdf', 'web', 'image', 'mp4'].includes(currentApp.contentType)) {
@@ -1794,13 +1582,13 @@ function renderCurrentMenuState() {
             document.querySelector('#detailScreen .detail-header').classList.remove('visible');
             if(zoomCtrl) zoomCtrl.classList.remove('visible');
             
-            detailContent.style.padding = '20px';
+            detailContent.style.padding = '25px';
             detailContent.style.overflow = 'auto';
             detailContent.style.backgroundColor = 'transparent';
             
             if(window.innerWidth <= 480) {
                 const fGrid = document.querySelector('.folder-grid-responsive');
-                if(fGrid) fGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(95px, 1fr))';
+                if(fGrid) fGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(110px, 1fr))';
             }
         }
 
@@ -1831,10 +1619,12 @@ function renderCurrentMenuState() {
 }
 
 let quickCreateParentId = null; let rightClickedAppId = null; 
-
 document.addEventListener('contextmenu', function(e) {
+    const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+    if (!isInput) e.preventDefault(); // ANTI COPY: Blokir klik kanan kecuali di input box
+    
     if (!currentUser || currentUser.role !== 'Admin') return; 
-    const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile, .bottom-tile'); 
+    const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile'); 
     
     if (isDashboard || isDetail) {
         e.preventDefault(); rightClickedAppId = null;
@@ -1913,8 +1703,8 @@ function openAdminPanel() {
     document.getElementById('dashboardScreen').style.display = 'none'; 
     document.getElementById('adminScreen').style.display = 'flex';
     document.getElementById('formHeaderLogo').value = headerConfig.logoText || "Dr.Mesin";
-    document.getElementById('formHeaderModel').value = headerConfig.modelText || "X-431";
-    document.getElementById('formHeaderSN').value = headerConfig.snText || "";
+    document.getElementById('formHeaderModel').value = headerConfig.modelText || "DR CAR DATA";
+    document.getElementById('formHeaderSN').value = headerConfig.snText || "REPAIR, MAINTENANCE, and MODIFICATION";
     document.getElementById('formHeaderWA').value = headerConfig.adminWA || "";
     document.getElementById('formHeaderNotif').value = headerConfig.globalNotification || '';
     renderAdminUserTable(); renderAdminAppTable();
@@ -1940,8 +1730,8 @@ function switchAdminTab(tabName) {
 
 function saveHeaderConfig() {
     headerConfig.logoText = document.getElementById('formHeaderLogo').value || "Dr.Mesin";
-    headerConfig.modelText = document.getElementById('formHeaderModel').value || "X-431";
-    headerConfig.snText = document.getElementById('formHeaderSN').value || "";
+    headerConfig.modelText = document.getElementById('formHeaderModel').value || "DR CAR DATA";
+    headerConfig.snText = document.getElementById('formHeaderSN').value || "REPAIR, MAINTENANCE, and MODIFICATION";
     headerConfig.adminWA = document.getElementById('formHeaderWA').value || "";
     headerConfig.globalNotification = document.getElementById('formHeaderNotif').value.trim();
     
@@ -1972,14 +1762,6 @@ function showUserForm(index = -1) {
     document.getElementById('userFormContainer').style.display = 'block'; 
     document.getElementById('userFormTitle').innerText = index >= 0 ? 'Edit Member Data' : 'Add New Member';
     
-    const adminPassInput = document.getElementById('formUserPassword');
-    const adminPassIcon = document.getElementById('toggleAdminPassIcon');
-    if (adminPassInput && adminPassIcon) {
-        adminPassInput.type = "password";
-        adminPassIcon.className = "fas fa-eye";
-        adminPassIcon.style.color = "var(--text-muted)";
-    }
-
     if(index === -1) { 
         ['formUserId','formUserUsername','formUserPassword','formUserNama','formUserEmail','formUserPhone','formUserExp'].forEach(id => document.getElementById(id).value = ''); 
         document.getElementById('formUserRole').value = 'Mekanik'; 
@@ -2027,7 +1809,7 @@ function saveUser() {
 }
 
 function deleteUser(index) {
-    if(usersData[index].username === atob('ZHJtZXNpbjAz')) return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
+    if(usersData[index].username === 'drmesin03') return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
     appConfirm("Delete this member permanently dari database?", function(yes) {
         if(yes) { 
             let backupArray = [...usersData]; 
@@ -2114,10 +1896,10 @@ function renderAdminAppTable() {
         let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
         
         if(!app.parentId) { 
-            let rootTag = 'RIGHT';
-            if (baseType === 'large-red') rootTag = 'LEFT';
-            if (baseType === 'bottom-tab') rootTag = 'BOTTOM';
-            levelText = `<b style="color:var(--primary-red)">ROOT (${rootTag})</b>`; 
+            let typeDesc = "RIGHT";
+            if(baseType === "large-red") typeDesc = "LEFT";
+            if(baseType === "bottom-tab") typeDesc = "BOTTOM";
+            levelText = `<b style="color:var(--primary-red)">ROOT (${typeDesc})</b>`; 
         } 
         else {
             let pathArr = app.breadcrumb.split(' > '); pathArr.pop(); 
@@ -2321,7 +2103,21 @@ detailScreenEl.addEventListener('touchstart', function() {
     if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
 }, {passive: true});
 
+// KEYBOARD SHORTCUT (ESC UNTUK KEMBALI) & ANTI-INSPECT DEVTOOLS
 document.addEventListener('keydown', function(e) {
+    // ANTI-INSPECT & DEVTOOLS
+    if (e.key === 'F12' || 
+       (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+       (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
+        e.preventDefault(); return false;
+    }
+    
+    // ANTI-COPY: Blokir Ctrl+C, Ctrl+S kecuali sedang mengetik di input/textarea
+    const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+    if (!isInput && e.ctrlKey && (e.key === 'C' || e.key === 'c' || e.key === 'S' || e.key === 's')) {
+        e.preventDefault(); return false;
+    }
+
     if (e.key === 'Escape') {
         const detailScreen = document.getElementById('detailScreen');
         const htmlPreviewer = document.getElementById('htmlPreviewerModal');
@@ -2344,37 +2140,24 @@ document.addEventListener('keydown', function(e) {
 });
 
 function autoInjectApps() {
-    appConfirm("Aksi ini akan menghapus susunan menu saat ini dan mengisinya dengan Data Modul Otomatis (Frontend & Backend). Lanjutkan?", function(yes) {
+    appConfirm("Aksi ini akan menghapus susunan menu saat ini dan mengisinya dengan Data Modul Otomatis (termasuk 4 Tab Bawah). Lanjutkan?", function(yes) {
         if(yes) {
             document.getElementById('loadingOverlay').style.display = 'flex';
-            
             const defaultMenus = [
                 { id: "m1", parentId: null, title: "INTELLIGENT DIAGNOSE", type: "large-red", icon: "fa-microchip", badge: "", contentType: "html", content: "<div class='content-box'><h3>System Ready</h3><p>System will automatically scan vehicle topology network.</p></div>" },
-                { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red", icon: "fa-cogs", badge: "VIP", contentType: "html", content: "<div class='content-box'><h3>Autotrans Active</h3><p>Diagnostic transmission systems interfaces.</p></div>" },
-                
+                { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red_ULTIMATE", icon: "fa-cogs", badge: "", contentType: "html", content: "<div class='content-box'><h3>Auto Transmission</h3></div>" },
                 { id: "m3", parentId: null, title: "GLOBAL AUTO FLUID", type: "small-dark", icon: "fa-network-wired", badge: "", contentType: "folder", content: "" },
                 { id: "m4", parentId: null, title: "LOCAL DIAGNOSE", type: "small-dark", icon: "fa-wrench", badge: "", contentType: "folder", content: "" },
-                { id: "m5", parentId: null, title: "ECU", type: "small-dark", icon: "fa-tachometer-alt", badge: "", contentType: "folder", content: "" },
-                { id: "m6", parentId: null, title: "SERVICE FUNCTION", type: "small-dark", icon: "fa-sync-alt", badge: "", contentType: "folder", content: "" },
-                { id: "m7", parentId: null, title: "SERTIFIKASI MEKANIK", type: "small-dark", icon: "fa-database", badge: "", contentType: "folder", content: "" },
-                { id: "m8", parentId: null, title: "OIL RESET", type: "small-dark", icon: "fa-oil-can", badge: "", contentType: "folder", content: "" },
-                { id: "m9", parentId: null, title: "VIDEO AREA", type: "small-dark", icon: "fa-video", badge: "", contentType: "folder", content: "" },
-                { id: "m10", parentId: null, title: "IGNITIONSPEC", type: "small-dark", icon: "fa-bolt", badge: "", contentType: "folder", content: "" },
-                { id: "m11", parentId: null, title: "IMMOBILIZER", type: "small-dark", icon: "fa-shield-alt", badge: "", contentType: "folder", content: "" },
-                { id: "m12", parentId: null, title: "TUTORIAL MP4", type: "small-dark", icon: "fa-play-circle", badge: "", contentType: "folder", content: "" },
-                { id: "m13", parentId: null, title: "QUICK SUPPORT", type: "small-dark", icon: "fa-headset", badge: "HOT", contentType: "teamviewer", content: "" },
+                { id: "m5", parentId: null, title: "SERVICE FUNCTION", type: "small-dark", icon: "fa-sync-alt", badge: "", contentType: "folder", content: "" },
+                { id: "m6", parentId: null, title: "SERTIVIKASI MEKANIK", type: "small-dark", icon: "fa-database", badge: "", contentType: "folder", content: "" },
+                { id: "m7", parentId: null, title: "OIL RESET", type: "small-dark", icon: "fa-oil-can", badge: "", contentType: "folder", content: "" },
+                { id: "m8", parentId: null, title: "IGNITIONSPEC", type: "small-dark", icon: "fa-bolt", badge: "", contentType: "folder", content: "" },
+                { id: "m9", parentId: null, title: "TUTORIAL MP4", type: "small-dark", icon: "fa-play-circle", badge: "", contentType: "folder", content: "" },
                 
-                { id: "b1", parentId: null, title: "FAMIL SETTING", type: "bottom-tab", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>FAMIL SETTING</h3><p>Diagnostic parameter settings and calibration threshold configurations.</p></div>" },
-                { id: "b2", parentId: null, title: "GOVER SCRUE", type: "bottom-tab", icon: "fa-file-invoice", badge: "", contentType: "html", content: "<div class='content-box'><h3>GOVER SCRUE</h3><p>Official diagnostic compliance protocols, security certificates, and legal compliance registries.</p></div>" },
-                { id: "b3", parentId: null, title: "SYSTENCE ATATS", type: "bottom-tab", icon: "fa-briefcase", badge: "", contentType: "html", content: "<div class='content-box'><h3>SYSTENCE ATATS</h3><p>System status reports, firmware patch configurations, and core memory state logs.</p></div>" },
-                { id: "b4", parentId: null, title: "SETTINGH PODE", type: "bottom-tab", icon: "fa-tools", badge: "", contentType: "html", content: "<div class='content-box'><h3>SETTINGH PODE</h3><p>Advanced diagnostic settings, interface customization options, and secure cryptographic code settings.</p></div>" },
-                
-                { id: "sub1", parentId: "m4", title: "ASIAN CARS", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
-                { id: "sub2", parentId: "m4", title: "EUROPEAN CARS", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
-                { id: "sub_a1", parentId: "sub1", title: "TOYOTA", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
-                { id: "sub_a2", parentId: "sub1", title: "HONDA", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
-                { id: "sub_t1", parentId: "sub_a1", title: "REPAIR MANUAL", type: "small-dark_PRO", icon: "fa-book", badge: "PRO", contentType: "folder", content: "" },
-                { id: "sub_r1", parentId: "sub_t1", title: "WIRING DIAGRAM", type: "small-dark_ULTIMATE", icon: "fa-plug", badge: "VIP", contentType: "image", content: "https://placehold.co/800x600/111/ff2a2a?text=Wiring+Diagram+Toyota" }
+                { id: "b1", parentId: null, title: "ECU", type: "bottom-tab_PRO", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>ECU Mapping</h3></div>" },
+                { id: "b2", parentId: null, title: "VIDEO AREA", type: "bottom-tab", icon: "fa-desktop", badge: "", contentType: "html", content: "<div class='content-box'><h3>Video Documentation</h3></div>" },
+                { id: "b3", parentId: null, title: "IMMOBILIZER", type: "bottom-tab", icon: "fa-shield-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>Immobilizer Setting</h3></div>" },
+                { id: "b4", parentId: null, title: "QUICK SUPPORT", type: "bottom-tab", icon: "fa-headset", badge: "", contentType: "teamviewer", content: "" }
             ];
             
             appsData = defaultMenus;
@@ -2398,11 +2181,11 @@ function autoInjectUsers() {
     appConfirm("Tambahkan 3 Data Akun Member otomatis (Mekanik, PRO, dan ULTIMATE) untuk testing? Akun yang lama tidak akan dihapus.", function(yes) {
         if(yes) {
             document.getElementById('loadingOverlay').style.display = 'flex';
-            // Base64 Obfuscation untuk testing dummy credentials agar aman dari View Source
+            // Username dan Passwords di-encode untuk keamanan source code
             const dummyUsers = [
                 { id: 'U' + Date.now() + '1', username: atob("bWVrYW5pa19wcm8="), pass: atob("MTIzNDU="), role: "PRO", nama: "Tester PRO", email: "pro@bengkel.com", phone: "628111", exp: "2099-12-31", devices: "[]" },
                 { id: 'U' + Date.now() + '2', username: atob("bWVrYW5pa192aXA="), pass: atob("MTIzNDU="), role: "ULTIMATE", nama: "Tester VIP", email: "vip@bengkel.com", phone: "628222", exp: "2099-12-31", devices: "[]" },
-                { id: 'U' + Date.now() + '3', username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Tester Regular", email: "reg@bengkel.com", phone: "628333", exp: "2099-12-31", devices: "[]" }
+                { id: 'U' + Date.now() + '3', username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Tester Reguler", email: "reg@bengkel.com", phone: "628333", exp: "2099-12-31", devices: "[]" }
             ];
             
             usersData = usersData.concat(dummyUsers);
@@ -2419,12 +2202,109 @@ function autoInjectUsers() {
         }
     });
 }
+
 </script>
 
 <script defer type="text/javascript">
 function googleTranslateElementInit() { new google.translate.TranslateElement({ pageLanguage: 'id', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_element'); }
 </script>
 <script defer type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+window.initFirebaseForChat = async function() {
+    try {
+        if (typeof __firebase_config === 'undefined') return false;
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'drcardata-app';
+        
+        // Gunakan token khusus jika tersedia, atau masuk anonim
+        if (typeof __initial_auth_token !== 'undefined') {
+            await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+            await signInAnonymously(auth);
+        }
+        
+        window.fbDb = db;
+        window.fbAppId = appId;
+        return true;
+    } catch (error) {
+        console.error("Kesalahan Inisialisasi Firebase Chat:", error);
+        return false;
+    }
+};
+
+window.listenToGlobalChat = function() {
+    if (!window.fbDb || !window.fbAppId) return;
+    
+    // Path public yang aman
+    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
+    
+    onSnapshot(chatRef, (snapshot) => {
+        let messages = [];
+        snapshot.forEach(doc => {
+            messages.push({ docId: doc.id, ...doc.data() });
+        });
+        
+        // Sortir di memori berdasarkan waktu untuk menghindari error indeks query firebase
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+        
+        window.chatMessagesData = messages.map(m => ({
+            sender: m.sender,
+            name: m.name,
+            text: m.text,
+            time: new Date(m.timestamp).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})
+        }));
+        
+        if (window.chatMessagesData.length === 0) {
+            window.chatMessagesData = [{ 
+                sender: 'system', 
+                name: 'SYSTEM', 
+                text: 'Global Secure Communication Channel Established.', 
+                time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
+            }];
+        }
+        
+        if (typeof window.renderChatMessages === 'function') {
+            window.renderChatMessages();
+        }
+    }, (err) => {
+        console.error("Chat sync error:", err);
+    });
+};
+
+window.sendChatMsgToFirebase = async function(sender, name, text) {
+    if (!window.fbDb || !window.fbAppId) return false;
+    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
+    await addDoc(chatRef, {
+        sender: sender,
+        name: name,
+        text: text,
+        timestamp: Date.now()
+    });
+    return true;
+};
+
+window.clearGlobalChatFirebase = async function() {
+    if (!window.fbDb || !window.fbAppId) return false;
+    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
+    const snapshot = await getDocs(chatRef);
+    
+    // Hapus seluruh dokumen pada koleksi
+    const deletePromises = [];
+    snapshot.forEach(d => {
+        deletePromises.push(deleteDoc(doc(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat', d.id)));
+    });
+    await Promise.all(deletePromises);
+    return true;
+};
+</script>
 
 </body>
 </html>
