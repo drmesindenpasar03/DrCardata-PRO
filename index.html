@@ -3,25 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DrCardata PRO - WebApp Builder GAS-Blogger v2</title>
+    <title>DrCardata PRO - Premium Cloud Diagnostic System</title>
     
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://translate.googleapis.com">
-    
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <!-- PWA Manifest Inline Data URI -->
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22DrCardata%20PRO%20Diagnostic%22%2C%22short_name%22%3A%22DrCardata%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080808%22%2C%22theme_color%22%3A%22%23e60000%22%7D">
+    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
         :root {
             --bg-color: #080808;
-            --surface-color: #1c1c1e;
-            --surface-hover: #2c2c2e;
+            --surface-color: #1a1a1a;
+            --surface-hover: #262626;
             --border-color: #333333;
             --primary-red: #e60000;
             --primary-dark: #b30000;
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -40,24 +45,13 @@
             overscroll-behavior-y: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        input, textarea, select {
-            -webkit-user-select: auto;
-            -moz-user-select: auto;
-            -ms-user-select: auto;
-            user-select: auto;
         }
 
         button, .admin-tab, .tile, .icon-item, .context-menu-item { touch-action: manipulation; }
 
         .bg-animated {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 0;
-            background: radial-gradient(circle at 50% 50%, #150000 0%, #050505 100%);
+            background: radial-gradient(circle at 50% 50%, #1a0000 0%, #050505 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite; 
             transform: translateZ(0);
@@ -65,38 +59,82 @@
         }
         .bg-grid {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 1;
-            background-image: linear-gradient(rgba(230, 0, 0, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(230, 0, 0, 0.15) 1px, transparent 1px);
-            background-size: 40px 40px; pointer-events: none; box-shadow: inset 0 0 150px #000;
+            background-image: linear-gradient(rgba(230, 0, 0, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(230, 0, 0, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none; box-shadow: inset 0 0 100px #000;
         }
         @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         .header-widget, .sidebar, .footer, .fauxcolumn-outer { display: none !important; }
+        
         #BloggerAppContainer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
-            z-index: 999999; display: flex; flex-direction: column;
-            overflow-y: auto; overflow-x: hidden; background: transparent;
+            z-index: 99999; display: flex; flex-direction: column;
+            overflow: hidden; background: transparent;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
 
-        .translate-wrapper {
-            position: relative; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center;
-            background: transparent; border: 1px solid var(--border-color); border-radius: 4px;
-            cursor: pointer; transition: 0.2s; margin-right: 5px; overflow: hidden;
+        /* Container Google Translate Premium */
+        #google_translate_container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            max-height: 35px;
+            margin-right: 5px;
         }
-        .translate-wrapper:hover { background: rgba(255,255,255,0.1); border-color: #666; }
-        .translate-wrapper i { color: var(--text-main); font-size: 1.1rem; pointer-events: none; z-index: 1; transition: 0.2s; }
-        #google_translate_element { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; opacity: 0.01; }
-        .goog-te-gadget { font-size: 0px !important; color: transparent !important; width: 100%; height: 100%; }
-        .goog-te-gadget .goog-te-combo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; opacity: 0; }
-        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+        #google_translate_container:hover {
+            background: rgba(15, 23, 42, 1);
+            border-color: rgba(230, 0, 0, 0.5);
+        }
+        #google_translate_container i {
+            color: #e60000;
+            margin-right: 8px;
+            font-size: 16px;
+            animation: spin-globe 8s linear infinite;
+        }
+        @keyframes spin-globe { 100% { transform: rotate(360deg); } }
+        
+        /* Sembunyikan banner pengganggu Google Translate */
+        .goog-te-banner-frame.skiptranslate, #goog-gt-tt { display: none !important; }
         body { top: 0px !important; }
+        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+        
+        /* Dropdown Styling */
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; }
+        .goog-te-gadget .goog-te-combo {
+            margin: 0;
+            padding: 2px 5px;
+            border-radius: 15px;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: inherit;
+            border: 1px solid rgba(230, 0, 0, 0.3);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .goog-te-gadget .goog-te-combo:hover {
+            border-color: #e60000;
+        }
+        .goog-te-gadget span { display: none !important; }
 
+        /* Welcome Splash Screen */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             background: radial-gradient(circle at center, #1a0000 0%, #050505 100%);
             z-index: 9999999; display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .splash-content { text-align: center; animation: splashFadeUp 0.8s ease-out forwards; }
+        .splash-content { text-align: center; padding: 20px; animation: splashFadeUp 0.8s ease-out forwards; }
         .splash-logo-wrapper { 
             width: 110px; height: 110px; margin: 0 auto 20px; 
             background: rgba(230, 0, 0, 0.05); border: 2px solid var(--primary-red);
@@ -112,16 +150,16 @@
         .splash-loader { width: 250px; height: 4px; background: #222; border-radius: 2px; margin: 0 auto; overflow: hidden; position: relative;}
         .splash-progress { width: 0%; height: 100%; background: var(--primary-red); animation: splashLoad 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; box-shadow: 0 0 10px var(--primary-red);}
         .splash-status { margin-top: 15px; font-size: 0.8rem; color: var(--primary-red); font-weight: bold; letter-spacing: 2px; animation: blink 1.5s infinite; }
-        .splash-footer { position: absolute; bottom: 30px; font-size: 0.75rem; color: #444; letter-spacing: 2px; }
+        .splash-footer { position: absolute; bottom: calc(30px + var(--safe-area-bottom)); font-size: 0.75rem; color: #444; letter-spacing: 2px; }
 
         @keyframes splashFadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes splashPulse { 0% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } 50% { box-shadow: 0 0 40px rgba(230,0,0,0.6); } 100% { box-shadow: 0 0 15px rgba(230,0,0,0.2); } }
         @keyframes splashLoad { 0% { width: 0%; } 20% { width: 30%; } 60% { width: 75%; } 100% { width: 100%; } }
 
-        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; position: relative; z-index: 10; padding: 15px;}
+        .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: relative; z-index: 10; padding: 15px; overflow-y: auto;}
         .login-box {
             background: rgba(20, 20, 20, 0.98); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.9);
-            width: 100%; max-width: 380px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
+            width: 100%; max-width: 390px; text-align: center; color: white; transition: all 0.3s ease; position: relative; overflow: hidden; transform: translateZ(0);
         }
         .login-box.active { padding: 40px 35px; }
         .login-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary-red); }
@@ -130,7 +168,6 @@
         .login-box.active .login-logo-container { transform: scale(0.65) translateY(-15px); margin-bottom: -35px; }
         .click-hint { font-size: 0.85rem; color: var(--primary-red); letter-spacing: 2px; font-weight: bold; animation: blink 1.5s infinite; }
         .login-box.active .click-hint { opacity: 0; max-height: 0; overflow: hidden; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .login-form-wrap { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; transform: translateY(-10px); }
         .login-box.active .login-form-wrap { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 15px; }
@@ -146,85 +183,196 @@
         .btn-wa { background: #25D366; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 1.1rem; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
 
         .app-header {
-            background: #0f0f0f; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between;
+            background: rgba(15, 15, 15, 0.98); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between;
             align-items: center; border-bottom: 2px solid var(--primary-red); flex-shrink: 0; z-index: 100; gap: 10px;
         }
-        .app-header .header-left { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text-muted); }
-        .app-header .header-left i { font-size: 2rem; color: var(--primary-red); }
-        .app-header .header-logo { color: #fff; font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
+        .app-header .header-left { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-muted); }
+        .app-header .header-left i { font-size: 1.8rem; color: var(--primary-red); }
+        .app-header .header-logo { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
         .app-header .header-logo span { color: var(--primary-red); }
-        .app-header .header-right { display: flex; align-items: center; gap: 12px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
+        .app-header .header-right { display: flex; align-items: center; gap: 8px; font-size: 1rem; flex-wrap: wrap; justify-content: flex-end;}
         
-        .btn-logout { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1.6rem; padding: 0 5px; transition: transform 0.2s; display: flex; align-items: center;}
-        .btn-logout:hover { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(230,0,0,0.6));}
-        .btn-chat-header, .btn-profile { background: transparent; border: 1px solid var(--border-color); border-radius: 4px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
-        .btn-chat-header:hover, .btn-profile:hover { background: rgba(255,255,255,0.1); border-color: #666; }
+        .btn-logout { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1.3rem; padding: 0; transition: transform 0.2s;}
+        .btn-logout:hover { transform: scale(1.1); }
+        .btn-chat-header, .btn-profile { background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;}
+        .btn-chat-header:hover, .btn-profile:hover { border-color: var(--primary-red); }
         .btn-chat-header { width: 35px; height: 35px; flex-shrink: 0;}
-        .btn-profile { padding: 6px 15px; font-size: 0.95rem; gap: 8px; font-weight: bold; white-space: nowrap; text-transform: uppercase; }
+        .btn-profile { padding: 6px 12px; font-size: 0.95rem; gap: 8px; font-weight: 600; white-space: nowrap; }
 
-        #dashboardScreen { display: none; padding: 25px; flex: 1; overflow-y: auto; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
-        .dashboard-wrapper { display: flex; flex-direction: column; gap: 25px; max-width: 1600px; margin: 0 auto; min-height: 100%; }
-        .dashboard-main { display: flex; gap: 20px; flex: 1; align-items: stretch; }
-        .left-pane { flex: 0 0 28%; display: flex; flex-direction: column; gap: 20px; }
-        .right-pane { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); grid-auto-rows: minmax(150px, 1fr); gap: 18px; align-content: start; }
+        #dashboardScreen { 
+            display: none; 
+            flex: 1; 
+            overflow-y: auto; 
+            position: relative; 
+            z-index: 10; 
+            -webkit-overflow-scrolling: touch;
+            padding: 20px;
+        }
+        .dashboard-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            width: 100%;
+        }
         
-        .bottom-pane { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; width: 100%; flex-shrink: 0; padding-bottom: 10px; }
+        .top-panes { 
+            display: flex; 
+            gap: 20px; 
+            width: 100%; 
+        }
+        .left-pane { 
+            flex: 0 0 280px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .right-pane { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            grid-auto-rows: minmax(110px, 1fr); 
+            gap: 15px; 
+            align-content: start; 
+        }
 
         .tile {
-            background: linear-gradient(145deg, #222222 0%, #151515 100%);
-            border: 1px solid #2a2a2a; 
-            border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; text-align: center; padding: 20px 15px; 
-            transition: transform 0.15s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s; 
-            transform: translateZ(0); overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            background: rgba(25, 25, 25, 0.95); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; text-align: center; padding: 15px 10px; transition: transform 0.15s ease, background 0.2s, border-color 0.2s; transform: translateZ(0);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .tile:active { transform: scale(0.97); }
-        .tile:hover { background: linear-gradient(145deg, #2a2a2a 0%, #1c1c1e 100%); border-color: #555; transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
+        .tile:active { transform: scale(0.95); }
+        .tile:hover { background: rgba(35, 35, 35, 1); border-color: var(--primary-red); transform: scale(1.03); }
+        .tile i { font-size: 2.5rem; margin-bottom: 12px; color: #ddd; transition: color 0.2s; }
+        .tile:hover i { color: var(--primary-red); }
+        .tile .title { font-size: 0.9rem; font-weight: bold; color: #ccc; line-height: 1.2; word-wrap: break-word;}
         
-        /* Ikon & Teks Tile Utama */
-        .tile-content-wrapper { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none;}
-        .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 3rem; margin-bottom: 15px; color: #eeeeee; transition: color 0.2s; }
-        .tile:hover i:not(.tile-watermark):not(.badge-icon) { color: #fff; }
-        .tile .title { font-size: 0.9rem; font-weight: 800; color: #ddd; line-height: 1.3; text-transform: uppercase; word-wrap: break-word;}
-        
-        /* Watermark Background */
-        .tile-watermark {
-            position: absolute; right: -15px; bottom: -15px;
-            font-size: 8rem; color: #ffffff; opacity: 0.03;
-            z-index: 1; pointer-events: none;
-            transform: rotate(-10deg);
-        }
-
-        /* Gaya Khusus Red Tile (Left Pane) */
-        .tile.red-tile { 
-            background: linear-gradient(135deg, #ff0000 0%, #a60000 100%); 
-            border: none; flex: 1; min-height: 200px;
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 5px 15px rgba(200,0,0,0.3);
-        }
-        .tile.red-tile:hover { filter: brightness(1.1); transform: translateY(-3px); box-shadow: inset 0 0 20px rgba(255,255,255,0.2), 0 8px 20px rgba(200,0,0,0.5); }
-        .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 4.5rem; color: #fff; margin-bottom: 20px;}
-        .tile.red-tile .title { font-size: 1.25rem; color: white; letter-spacing: 1px;}
-        .tile.red-tile .tile-watermark { opacity: 0.1; font-size: 12rem; right: -20px; bottom: -20px; }
-        
-        /* Gaya Khusus Bottom Tile */
-        .tile.bottom-tile { min-height: 120px; padding: 15px; }
-        .tile.bottom-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.2rem; margin-bottom: 12px; }
-        .tile.bottom-tile .title { font-size: 0.95rem; }
-        .tile.bottom-tile .tile-watermark { font-size: 6rem; right: -10px; bottom: -20px; opacity: 0.04;}
-
         .sortable-ghost { opacity: 0.4; border: 2px dashed #666 !important; background: rgba(0,0,0,0.8) !important; }
         
-        .tile.add-tile { border: 2px dashed #444; background: transparent; box-shadow: none; }
-        .tile.add-tile i { color: #555; font-size: 3rem; margin: 0; }
-        .tile.add-tile:hover { border-color: var(--primary-red); background: rgba(230,0,0,0.05); }
-        .tile.add-tile:hover i { color: var(--primary-red); }
+        .tile.red-tile { background: rgba(200, 0, 0, 0.9); border: 1px solid var(--primary-dark); flex: 1; min-height: 140px; overflow: hidden; }
+        .tile.red-tile:hover { background: rgba(230, 0, 0, 1); border-color: #ff4d4d; }
+        .tile.red-tile i { font-size: 3.5rem; color: #fff; margin-bottom: 15px;}
         
-        /* Badge & Akses Ikon */
-        .badge { position: absolute; top: -6px; right: -6px; background: var(--primary-red); color: white; border-radius: 4px; padding: 3px 6px; min-width: 20px; font-size: 0.8rem; font-weight: bold; z-index: 3; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
-        .badge-icon { position: absolute; top: 12px; right: 15px; font-size: 1.4rem; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none;}
-        .badge-icon.crown { color: #ffd700; }
-        .badge-icon.star { color: #c0c0c0; }
+        .tile.red-tile i.red-tile-bg-icon {
+            position: absolute !important;
+            bottom: -20px !important;
+            right: -20px !important;
+            font-size: 7.5rem !important;
+            color: rgba(255, 255, 255, 0.05) !important;
+            pointer-events: none;
+            transition: color 0.3s, transform 0.3s, opacity 0.3s;
+            z-index: 1;
+            margin-bottom: 0 !important;
+        }
+        .tile.red-tile:hover i.red-tile-bg-icon {
+            color: rgba(255, 255, 255, 0.12) !important;
+            transform: scale(1.15) translate(-5px, -5px);
+        }
+        .tile.red-tile i:not(.red-tile-bg-icon),
+        .tile.red-tile .title {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .tile.red-tile .title { font-size: 1.1rem; color: white; }
+        
+        .tile.add-tile { border: 2px dashed rgba(255,255,255,0.3); background: transparent; }
+        .tile.add-tile i { color: rgba(255,255,255,0.5); font-size: 2.5rem; margin: 0; }
+        .tile.add-tile:hover { border-color: var(--primary-red); }
+        .tile.add-tile:hover i { color: var(--primary-red); }
+        .badge { position: absolute; top: -6px; right: -6px; background: var(--primary-red); color: white; border-radius: 4px; padding: 3px 6px; min-width: 20px; font-size: 0.8rem; font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+
+        .bottom-pane-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .bottom-tile {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.95) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            text-align: center;
+            padding: 22px 15px;
+            transition: transform 0.15s ease, background 0.2s, border-color 0.2s;
+            transform: translateZ(0);
+            min-height: 120px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        .bottom-tile-bg-icon {
+            position: absolute !important;
+            bottom: -20px !important;
+            right: -20px !important;
+            font-size: 6rem !important;
+            color: rgba(255, 255, 255, 0.05) !important;
+            pointer-events: none;
+            transition: color 0.3s, transform 0.3s, opacity 0.3s;
+            z-index: 1;
+            margin-bottom: 0 !important;
+        }
+        
+        .bottom-tile:hover .bottom-tile-bg-icon {
+            color: rgba(230, 0, 0, 0.12) !important;
+            transform: scale(1.15) translate(-5px, -5px);
+        }
+        
+        .bottom-tile:active { transform: scale(0.96); }
+        .bottom-tile:hover {
+            background: linear-gradient(135deg, rgba(40, 40, 40, 0.98) 0%, rgba(20, 20, 20, 0.98) 100%);
+            border-color: var(--primary-red);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(230, 0, 0, 0.2);
+        }
+        .bottom-tile i {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+            transition: color 0.2s, transform 0.2s;
+            z-index: 2;
+        }
+        .bottom-tile:hover i {
+            color: var(--primary-red);
+            transform: scale(1.1);
+        }
+        .bottom-tile .title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #d1d1d1;
+            line-height: 1.3;
+            word-wrap: break-word;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+        .bottom-tile:hover .title {
+            color: #fff;
+        }
+
+        /* Sparkle Animation */
+        @keyframes subtle-sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(15deg); color: var(--primary-red); text-shadow: 0 0 10px rgba(230,0,0,0.8); }
+        }
+        .sparkle-decor {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            animation: subtle-sparkle 2s infinite ease-in-out;
+            pointer-events: none;
+        }
 
         .modal-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: var(--bg-color); z-index: 1000000; flex-direction: column; }
         .detail-header {
@@ -232,7 +380,7 @@
         }
         .btn-back { background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; width: 38px; height: 38px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: 0.2s;}
         .btn-back:hover { background: var(--primary-red); border-color: var(--primary-red); }
-        .detail-content { flex: 1; padding: 25px; overflow-y: auto; color: #fff; background: transparent; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
+        .detail-content { flex: 1; padding: 20px; overflow-y: auto; color: #fff; background: transparent; position: relative; z-index: 10; -webkit-overflow-scrolling: touch;}
 
         .flipbook-container { display: flex; flex-direction: column; width: 100%; height: 100%; background: #0a0a0a; position: relative; overflow: hidden; }
         .flipbook-toolbar { width: 100%; background: #1a1a1a; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-red); z-index: 10; box-sizing: border-box; flex-shrink: 0;}
@@ -261,7 +409,7 @@
         .admin-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .content-box { background: rgba(28, 28, 30, 0.9); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .content-box { background: rgba(20, 20, 20, 1); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
         .content-box h3 { margin-top: 0; color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;}
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .form-grid.full { grid-template-columns: 1fr; margin-bottom: 15px; }
@@ -313,14 +461,14 @@
         .chat-bubble { max-width: 80%; padding: 12px 18px; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; word-wrap: break-word; animation: fadeIn 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .chat-sent { align-self: flex-end; background: var(--primary-dark); border-bottom-right-radius: 0; }
         .chat-recv { align-self: flex-start; background: #262626; border-bottom-left-radius: 0;}
-        .chat-input-area { background: rgba(20,20,20,1); padding: 15px 20px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); }
+        .chat-input-area { background: rgba(20, 20, 20, 1); padding: 15px 20px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); }
         .chat-input-area input { flex: 1; margin: 0; }
 
         .html-preview-split { display: flex; flex: 1; overflow: hidden; flex-direction: row; padding: 15px; gap: 15px; }
 
         #detailScreen.immersive-mode .detail-header {
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
-            transform: translateX(100%); /* MENGHILANG KE SAMPING KANAN */
+            transform: translateX(100%);
             box-shadow: 0 5px 20px rgba(0,0,0,0.8);
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
         }
@@ -358,64 +506,126 @@
         .smart-zoom-ctrl button:hover { background: var(--primary-red); border-color: var(--primary-red); transform: scale(1.1); box-shadow: 0 0 15px rgba(230,0,0,0.5);}
         .smart-zoom-ctrl span { color: #fff; font-size: 0.95rem; font-weight: bold; min-width: 50px; text-align: center; letter-spacing: 1px;}
 
-        /* TABLET & SMALL LAPTOP (Max 900px) */
-        @media (max-width: 900px) { 
-            .dashboard-main { flex-direction: column; } 
-            .left-pane { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; } 
+        @media (min-width: 901px) {
+            .dashboard-wrapper {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .top-panes {
+                flex: 1;
+                min-height: 0; 
+            }
         }
 
-        /* TAB KECIL & HP BESAR (Max 768px) */
+        @media (max-width: 1024px) {
+            .left-pane {
+                flex: 0 0 240px;
+            }
+            .right-pane {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 12px;
+            }
+            .bottom-pane-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 900px) { 
+            #dashboardScreen {
+                padding: 15px;
+            }
+            .dashboard-wrapper { 
+                flex-direction: column; 
+                gap: 15px;
+            } 
+            .top-panes { 
+                flex-direction: column; 
+                gap: 15px;
+            }
+            .left-pane { 
+                flex: 0 0 auto; 
+                display: grid; 
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+                gap: 12px; 
+            } 
+            .right-pane {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 12px;
+            }
+            .bottom-pane-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 12px; 
+            }
+        }
+
         @media (max-width: 768px) {
             .app-header { flex-wrap: wrap; padding: 10px 15px; }
             .header-logo { order: -1; flex: 1 1 100%; text-align: center; margin-bottom: 10px; font-size: 1.8rem !important; }
+            
             .admin-layout { flex-direction: column; } 
             .admin-tabs-side { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; overflow-x: auto; white-space: nowrap; }
             .admin-tab { border-left: none; border-bottom: 4px solid transparent; padding: 14px 20px; flex: 1; justify-content: center; font-size: 0.95rem;} 
             .admin-tab.active { border-bottom-color: var(--primary-red); }
+            
             .form-grid { grid-template-columns: 1fr; gap: 12px; } 
-            #dashboardScreen { padding: 15px; } 
-            .right-pane { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-            .tile { padding: 15px 10px; } .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.2rem; margin-bottom: 8px; } .tile .title { font-size: 0.85rem; } .tile.red-tile { padding: 20px 15px; min-height: 150px; } .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 3rem; }
+            .tile { padding: 12px 8px; } 
+            .tile i { font-size: 2rem; margin-bottom: 8px; } 
+            .tile .title { font-size: 0.8rem; } 
+            
+            .tile.red-tile { padding: 15px 10px; min-height: 110px;} 
+            .tile.red-tile i { font-size: 2.8rem; }
+            
             .login-box { width: 92%; padding: 25px 20px; }
             .login-box.active { padding: 30px 20px; }
+            
             .detail-header { padding: 10px 15px; font-size: 1.05rem; }
             .html-preview-split { flex-direction: column; overflow-y: auto; }
             
-            .bottom-pane { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .tile.bottom-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 1.8rem; }
-            .tile.bottom-tile .title { font-size: 0.85rem; }
+            .btn-logout { font-size: 1.2rem; }
+            .bottom-tile { padding: 15px 10px; min-height: 100px; }
+            .bottom-tile i { font-size: 1.9rem; margin-bottom: 8px; }
+            .bottom-tile .title { font-size: 0.85rem; }
         }
 
-        /* SMARTPHONE / HP KECIL (Max 480px) */
         @media (max-width: 480px) {
-            .header-left span { display: none; } 
-            .header-left b { font-size: 0.85rem; }
+            .header-left span { display: none; }
+            .header-left b { font-size: 0.8rem; }
             .header-logo { font-size: 1.5rem !important; margin-bottom: 8px;}
             .btn-profile { padding: 6px 10px; font-size: 0.85rem; }
             .btn-chat-header { width: 32px; height: 32px; }
-            .btn-logout { font-size: 1.4rem; }
-            
-            .left-pane { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-            .right-pane { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-            
-            .tile { padding: 12px 8px; }
-            .tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2rem; margin-bottom: 8px; }
-            .tile .title { font-size: 0.8rem; }
-            
-            .tile.red-tile { padding: 15px 10px; min-height: 120px; }
-            .tile.red-tile i:not(.tile-watermark):not(.badge-icon) { font-size: 2.5rem; margin-bottom: 8px;}
-            .tile.red-tile .title { font-size: 1rem; }
-            
-            .bottom-pane { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .tile.bottom-tile { min-height: 90px; padding: 10px; }
+            .btn-logout { font-size: 1.2rem; }
             
             #dashboardScreen { padding: 10px; }
+            .left-pane { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+            .right-pane { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; }
+            
+            .tile { padding: 10px 5px; }
+            .tile i { font-size: 1.8rem; margin-bottom: 6px; }
+            .tile .title { font-size: 0.75rem; }
+            
+            .tile.red-tile { padding: 12px 8px; min-height: 90px; }
+            .tile.red-tile i { font-size: 2.2rem; margin-bottom: 8px;}
+            .tile.red-tile .title { font-size: 0.95rem; }
+            
             .custom-dialog-box { padding: 15px; width: 95%; }
             .chat-bubble { max-width: 90%; font-size: 0.95rem; }
 
             .smart-zoom-ctrl { bottom: 20px; right: 50%; transform: translate(50%, 30px) scale(0.9); padding: 6px 12px; gap: 8px; }
             #detailScreen.immersive-mode .smart-zoom-ctrl.visible { transform: translate(50%, 0) scale(1); }
             .smart-zoom-ctrl button { width: 35px; height: 35px; font-size: 1rem; }
+            
+            .bottom-pane-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .bottom-tile { padding: 12px 8px; min-height: 85px; }
+            .bottom-tile i { font-size: 1.6rem; margin-bottom: 6px; }
+            .bottom-tile .title { font-size: 0.75rem; }
+        }
+
+        .sortable-fallback {
+            opacity: 0.9 !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
         }
     </style>
 </head>
@@ -426,39 +636,42 @@
 
 <div id="BloggerAppContainer">
     
+    <!-- Welcome Splash Screen -->
     <div id="welcomeScreen">
         <div class="splash-content">
             <div class="splash-logo-wrapper">
                 <i class="fas fa-microchip splash-icon"></i>
             </div>
             <h1 class="splash-title">DrCardata <span>PRO</span></h1>
-            <p class="splash-subtitle">ADVANCED DIAGNOSTIC SYSTEM</p>
+            <p class="splash-subtitle">CLOUD INTELLIGENT DIAGNOSTIC</p>
             
             <div class="splash-loader">
                 <div class="splash-progress"></div>
             </div>
-            <div class="splash-status" id="splashStatusText">INITIALIZING SYSTEM...</div>
+            <div class="splash-status" id="splashStatusText">BOOTING CORE ENGINE...</div>
         </div>
-        <div class="splash-footer">V2.0.0 SECURE BUILD</div>
+        <div class="splash-footer">V3.0.0 SECURE CLOUD BUILD</div>
     </div>
 
     <div class="app-header" id="mainHeader" style="display: none;">
         <div class="header-left">
             <i class="fas fa-microchip"></i>
             <div>
-                <b id="displayHeaderModel" style="font-size: 1.1rem; color:#fff; letter-spacing:1px; font-weight:800;">DR CAR DATA</b><br>
-                <span id="displayHeaderSN" style="font-size: 0.75rem; color: var(--text-muted); font-weight:600;">REPAIR, MAINTENANCE, and MODIFICATION</span>
+                <b id="displayHeaderModel">X-431 PAD9 LINK</b><br>
+                <span id="displayHeaderSN" style="font-size: 0.8rem; color: var(--text-muted);">S.N:98760000003 V8.00.027</span>
             </div>
         </div>
         <div class="header-logo" id="displayHeaderLogo">Dr.<span>Mesin</span></div>
         <div class="header-right">
-            <div class="translate-wrapper" title="Translate Application">
+            <!-- Google Translate Widget Terintegrasi Pojok Kanan -->
+            <div id="google_translate_container">
                 <i class="fas fa-globe"></i>
                 <div id="google_translate_element"></div>
             </div>
+            
             <button class="btn-chat-header" id="btnAdminHeader" onclick="openAdminPanel()" title="Admin Panel" style="display: none; margin-right:5px;"><i class="fas fa-cog"></i></button>
             <button class="btn-chat-header" onclick="openChatScreen()" title="Secure Comms"><i class="fas fa-comment-dots"></i></button>
-            <button class="btn-profile" onclick="openProfile()" title="Status Member"><i class="fas fa-user-astronaut"></i> <span id="headerUserText">DRMESIN03</span></button>
+            <button class="btn-profile" onclick="openProfile()" title="Status Member"><i class="fas fa-user-astronaut"></i> <span id="headerUserText">User</span></button>
             <button class="btn-logout" onclick="logout()" title="Logout"><i class="fas fa-power-off"></i></button>
         </div>
     </div>
@@ -467,41 +680,46 @@
         <div class="login-box" id="loginBox">
             <div class="login-logo-container" onclick="revealLogin()" title="Tap to Initialize">
                 <div class="login-logo"><i class="fas fa-microchip"></i></div>
-                <div class="click-hint">TAP TO INITIALIZE</div>
+                <div class="click-hint">TAP TO CONFIGURE DEVICE</div>
             </div>
             <div class="login-form-wrap">
-                <h2>SECURE ACCESS</h2>
+                <h2>SECURE SYSTEM PORTAL</h2>
                 <div class="input-group">
                     <i class="fas fa-user"></i>
-                    <input type="text" id="username" placeholder="System ID">
+                    <input type="text" id="username" placeholder="System ID / Admin Email" autocomplete="username" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Passcode" onkeypress="handleLoginEnter(event)">
+                    <input type="password" id="password" placeholder="Passcode / Admin Key" onkeypress="handleLoginEnter(event)" autocomplete="current-password" autocorrect="off" autocapitalize="off" spellcheck="false" style="padding-right: 45px;">
+                    <button type="button" onclick="togglePasswordVisibility('password', 'toggleLoginPassIcon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
+                        <i id="toggleLoginPassIcon" class="fas fa-eye"></i>
+                    </button>
                 </div>
-                <button class="btn-login" onclick="prosesLogin()"><i class="fas fa-sign-in-alt"></i> INITIALIZE LOGIN</button>
+                <button class="btn-login" onclick="prosesLogin()"><i class="fas fa-sign-in-alt"></i> INITIALIZE SECURE LOGIN</button>
             </div>
         </div>
     </div>
 
+    <!-- Layar Lisensi Kadaluarsa -->
     <div id="expiredScreen" class="center-screen" style="display: none;">
         <div class="login-box" style="border-color: var(--primary-red); display: block; max-height: unset; opacity: 1;">
             <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--primary-red); margin-bottom: 15px;"></i>
-            <h2 style="color: var(--primary-red);">ACCESS DENIED</h2>
+            <h2 style="color: var(--primary-red);">LICENSE TERMINATED</h2>
             <p style="font-size: 1.1rem; margin-bottom: 5px;">Lisensi Anda (<b id="expiredUsername" style="color:#fff;">user</b>) telah kedaluwarsa.</p>
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">Sistem mengunci akses. Silakan hubungi Administrator untuk memperpanjang lisensi Anda.</p>
-            <button class="btn-wa" onclick="contactAdminWA()"><i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> PERPANJANG LISENSI</button>
-            <button onclick="logout()" style="background:transparent; border:none; color:var(--text-muted); margin-top:15px; cursor:pointer; text-decoration:underline; font-size:0.95rem;">Kembali ke Login</button>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">Sistem database Cloud mengunci otentikasi. Silakan hubungi Administrator untuk memperpanjang siklus lisensi.</p>
+            <button class="btn-wa" onclick="contactAdminWA()"><i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> HUBUNGI ADMIN TELEMETRI</button>
+            <button onclick="logout()" style="background:transparent; border:none; color:var(--text-muted); margin-top:15px; cursor:pointer; text-decoration:underline; font-size:0.95rem;">Kembali ke Portal Login</button>
         </div>
     </div>
 
+    <!-- Main Dashboard Screen -->
     <div id="dashboardScreen">
         <div class="dashboard-wrapper">
-            <div class="dashboard-main">
+            <div class="top-panes">
                 <div class="left-pane" id="leftPaneContainer"></div>
                 <div class="right-pane" id="rightPaneContainer"></div>
             </div>
-            <div class="bottom-pane" id="bottomPaneContainer"></div>
+            <div class="bottom-pane-grid" id="bottomPaneContainer"></div>
         </div>
     </div>
 
@@ -526,10 +744,11 @@
         <div class="detail-content" id="detailContent"></div>
     </div>
 
+    <!-- User Profile Screen -->
     <div id="profileScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('profileScreen')"><i class="fas fa-times"></i></button>
-            <span>MEMBER IDENTITY</span>
+            <span>SECURE MEMBER TELEMETRY</span>
         </div>
         <div class="detail-content">
             <div class="profile-card">
@@ -551,7 +770,7 @@
     <div id="chatScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('chatScreen')"><i class="fas fa-chevron-left"></i></button>
-            <span style="flex: 1;"><i class="fas fa-comment-dots" style="margin-right:8px; color:var(--primary-red);"></i> SECURE COMMS</span>
+            <span style="flex: 1;"><i class="fas fa-comment-dots" style="margin-right:8px; color:var(--primary-red);"></i> SECURE CHAT CLOUD</span>
             <button onclick="clearChatHistory()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size: 1.1rem; padding: 5px;" title="Bersihkan Obrolan Lokal"><i class="fas fa-trash-alt"></i></button>
         </div>
         <div class="detail-content" id="chatContainerWrapper" style="padding: 20px; display: flex; flex-direction: column; overflow-y: auto;">
@@ -566,7 +785,7 @@
     <div id="adminScreen" class="modal-screen">
         <div class="detail-header">
             <button class="btn-back" onclick="closeModal('adminScreen')"><i class="fas fa-times"></i></button>
-            <span>SYSTEM CONFIGURATION</span>
+            <span>CLOUD CONTROL CONSOLE</span>
         </div>
         <div class="admin-layout">
             <div class="admin-tabs-side">
@@ -576,11 +795,12 @@
             </div>
             
             <div class="admin-content-side">
+                <!-- User Access Tab -->
                 <div id="admin-users" class="admin-section active">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-users" style="color:var(--primary-red); margin-right:8px;"></i> Registered Personnel</h3>
+                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-users" style="color:var(--primary-red); margin-right:8px;"></i> Cloud Personnel Registry</h3>
                         <div style="display:flex; gap:10px;">
-                            <button class="btn-primary" style="background:#3b82f6;" onclick="autoInjectUsers()"><i class="fas fa-magic"></i> Auto Inject</button>
+                            <button class="btn-primary" style="background:#3b82f6;" onclick="autoInjectUsers()"><i class="fas fa-magic"></i> Auto Inject Users</button>
                             <button class="btn-primary btn-success" onclick="showUserForm()"><i class="fas fa-user-plus"></i> Add Member</button>
                         </div>
                     </div>
@@ -590,7 +810,15 @@
                         <input type="hidden" id="formUserId">
                         <div class="form-grid">
                             <div class="form-group"><label>System ID (Username)</label><input type="text" id="formUserUsername" class="form-control" placeholder="Ketik ID unik..."></div>
-                            <div class="form-group"><label>Access Key (Password)</label><input type="text" id="formUserPassword" class="form-control" placeholder="Ketik password..."></div>
+                            <div class="form-group">
+                                <label>Access Key (Password)</label>
+                                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                    <input type="password" id="formUserPassword" class="form-control" placeholder="Ketik password..." autocomplete="new-password" style="padding-right: 45px; width: 100%;">
+                                    <button type="button" onclick="togglePasswordVisibility('formUserPassword', 'toggleAdminPassIcon')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;" title="Lihat Password">
+                                        <i id="toggleAdminPassIcon" class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <div class="form-group"><label>Nama Lengkap</label><input type="text" id="formUserNama" class="form-control" placeholder="Nama mekanik / admin..."></div>
                             <div class="form-group"><label>Alamat Email</label><input type="email" id="formUserEmail" class="form-control" placeholder="Opsional..."></div>
                             <div class="form-group"><label>Nomor Kontak / WA</label><input type="text" id="formUserPhone" class="form-control" placeholder="Misal: 62812..."></div>
@@ -619,11 +847,12 @@
                     </div>
                 </div>
 
+                <!-- Apps Routing Tab -->
                 <div id="admin-apps" class="admin-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-sitemap" style="color:var(--primary-red); margin-right:8px;"></i> System Modules Routing</h3>
+                        <h3 style="margin:0; color:#fff; font-size:1.3rem;"><i class="fas fa-sitemap" style="color:var(--primary-red); margin-right:8px;"></i> Cloud Modules Routing</h3>
                         <div style="display:flex; gap:10px;">
-                            <button class="btn-primary" style="background:#3b82f6;" onclick="autoInjectApps()"><i class="fas fa-magic"></i> Auto Inject</button>
+                            <button class="btn-primary" style="background:#3b82f6;" onclick="autoInjectApps()"><i class="fas fa-magic"></i> Auto Inject Apps</button>
                             <button class="btn-primary btn-success" onclick="showAppForm()"><i class="fas fa-folder-plus"></i> New Node</button>
                         </div>
                     </div>
@@ -645,23 +874,24 @@
                     </div>
                 </div>
 
+                <!-- Core Settings Tab -->
                 <div id="admin-header" class="admin-section">
                     <div style="max-width: 800px;">
-                        <h3 style="margin-top:0; color:#fff; font-size:1.3rem; margin-bottom:20px;"><i class="fas fa-sliders-h" style="color:var(--primary-red); margin-right:8px;"></i> Core Interface Settings</h3>
+                        <h3 style="margin-top:0; color:#fff; font-size:1.3rem; margin-bottom:20px;"><i class="fas fa-sliders-h" style="color:var(--primary-red); margin-right:8px;"></i> Core Cloud Interface Settings</h3>
                         <div class="content-box">
                             <div class="form-grid">
                                 <div class="form-group"><label>Main Logo Text</label><input type="text" id="formHeaderLogo" class="form-control" placeholder="e.g. Dr.Mesin"></div>
-                                <div class="form-group"><label>Device Model Identifier</label><input type="text" id="formHeaderModel" class="form-control" placeholder="e.g. DR CAR DATA"></div>
-                                <div class="form-group"><label>Hardware S.N & Firmware</label><input type="text" id="formHeaderSN" class="form-control" placeholder="e.g. REPAIR, MAINTENANCE..."></div>
+                                <div class="form-group"><label>Device Model Identifier</label><input type="text" id="formHeaderModel" class="form-control" placeholder="e.g. X-431 PAD9 LINK"></div>
+                                <div class="form-group"><label>Hardware S.N & Firmware</label><input type="text" id="formHeaderSN" class="form-control" placeholder="e.g. S.N:98760000003 V8.00.027"></div>
                                 <div class="form-group"><label>Nomor WhatsApp Admin</label><input type="text" id="formHeaderWA" class="form-control" placeholder="e.g. 62812... (Tanpa +)"></div>
                             </div>
                             <div style="background: rgba(230,0,0,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-red); margin-top: 15px;">
                                 <div class="form-group" style="margin-bottom:0;">
-                                    <label style="color:#fff;"><i class="fas fa-bullhorn" style="color:var(--primary-red); margin-right:6px;"></i> Pemberitahuan Sistem (Popup saat Login)</label>
+                                    <label style="color:#fff;"><i class="fas fa-bullhorn" style="color:var(--primary-red); margin-right:6px;"></i> Pemberitahuan Sistem (Global Cloud Notification)</label>
                                     <textarea id="formHeaderNotif" class="form-control" placeholder="Ketik pengumuman di sini... (Kosongkan jika tidak ada)" rows="4" style="margin-bottom:0;"></textarea>
                                 </div>
                             </div>
-                            <button class="btn-primary" style="margin-top:20px; width:100%; padding:12px;" onclick="saveHeaderConfig()"><i class="fas fa-sync"></i> Sync Configuration</button>
+                            <button class="btn-primary" style="margin-top:20px; width:100%; padding:12px;" onclick="saveHeaderConfig()"><i class="fas fa-sync"></i> Sync Cloud Configuration</button>
                         </div>
                     </div>
                 </div>
@@ -669,6 +899,7 @@
         </div>
     </div>
 
+    <!-- Create/Edit Module Form -->
     <div id="appFormContainer">
         <div class="content-box">
             <h4 id="appFormTitle" style="margin-top:0; color:#fff; font-size:1.3rem; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:20px;">Create New Node</h4>
@@ -678,7 +909,14 @@
                 <div class="form-group"><label>Module Name (Judul)</label><input type="text" id="formAppTitle" class="form-control" placeholder="e.g. REPAIR MANUAL..."></div>
                 <div class="form-group"><label>Notification Badge (Label)</label><input type="text" id="formAppBadge" class="form-control" placeholder="e.g. HOT, NEW, atau 145"></div>
                 <div class="form-group"><label>Parent Node (Lokasi Folder)</label><select id="formAppParent" class="form-control" onchange="toggleContentType()"><option value="">-- ROOT DASHBOARD --</option></select></div>
-                <div class="form-group" id="typeGroup"><label>Visual Style (Khusus Root)</label><select id="formAppType" class="form-control"><option value="small-dark">Standard Grid (Right Pane)</option><option value="large-red">Primary Action (Left Pane)</option><option value="bottom-tab">Bottom Tab (Lebar Bawah)</option></select></div>
+                <div class="form-group" id="typeGroup">
+                    <label>Visual Style (Khusus Root)</label>
+                    <select id="formAppType" class="form-control">
+                        <option value="small-dark">Standard Grid (Right Pane)</option>
+                        <option value="large-red">Primary Action (Left Pane)</option>
+                        <option value="bottom-tab">Bottom Tab (Footer Row)</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label>Module Type / Action</label>
                     <select id="formAppContentType" class="form-control" onchange="toggleContentType()">
@@ -713,6 +951,7 @@
         </div>
     </div>
 
+    <!-- Context Menu Admin -->
     <div id="adminContextMenu">
         <div class="context-menu-item" id="ctxAdd" onclick="quickCreateNode()"><i class="fas fa-folder-plus"></i> Create New Node Here</div>
         <div class="context-menu-item" id="ctxEdit" onclick="quickEditNode()" style="display:none; border-top:1px solid var(--border-color);"><i class="fas fa-edit"></i> Edit Node / Rename</div>
@@ -725,6 +964,7 @@
         <div class="context-menu-item" onclick="closeContextMenu()" style="border-top:1px solid var(--border-color);"><i class="fas fa-times"></i> Cancel</div>
     </div>
 
+    <!-- Dialog Popups -->
     <div id="customDialogOverlay">
         <div class="custom-dialog-box">
             <i id="dialogIcon" class="fas fa-exclamation-triangle" style="font-size:3.5rem; margin-bottom:15px;"></i>
@@ -737,10 +977,12 @@
         </div>
     </div>
 
+    <!-- Processing Overlay Spinner -->
     <div id="loadingOverlay">
-        <div><div class="spinner"></div><p style="margin-top: 15px; font-weight: bold; color: var(--primary-red); letter-spacing: 2px;">PROCESSING...</p></div>
+        <div><div class="spinner"></div><p style="margin-top: 15px; font-weight: bold; color: var(--primary-red); letter-spacing: 2px;">SYNCHRONIZING CLOUD...</p></div>
     </div>
 
+    <!-- Live Preview Modal -->
     <div id="htmlPreviewerModal" class="modal-screen" style="z-index: 9999999; background: rgba(10,10,10,0.98);">
         <div class="detail-header" style="justify-content: space-between;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -769,12 +1011,38 @@
     </div>
 </div>
 
-<script>
-const IS_PREVIEW = false; 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// SENSITIVE DATA HIDDEN (BASE64 ENCODED)
-const _0xGas = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4aXlROW9sdko3QW91MmhzWDBUZmV4dk4xMktzcUQzRGRNa0dlNWUtX2lCckNzMm0yZXF0R3BHT3k3X0M0cllUamMvZXhlYw==";
-const GAS_URL = atob(_0xGas); 
+const IS_PREVIEW = false; // Di-set ke false karena aplikasi sudah menggunakan data dan server nyata
+
+const appId = 'drcardata-pro-telemetri';
+
+// CONFIG FIREBASE CLOUD (LIVE)
+const firebaseConfig = {
+    apiKey: "AIzaSyBkoGiG1LpFv_yAFS1v0Zpca68g0Y2ZoUY",
+    authDomain: "drcardata-pro-27811.firebaseapp.com",
+    projectId: "drcardata-pro-27811",
+    storageBucket: "drcardata-pro-27811.firebasestorage.app",
+    messagingSenderId: "687675014532",
+    appId: "1:687675014532:web:ef20cfd5d5a57150d431d1"
+};
+
+// Inisialisasi Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const iconList = [
+    "fa-car", "fa-motorcycle", "fa-truck", "fa-bus", "fa-wrench", "fa-tools", "fa-cog", "fa-cogs",
+    "fa-microchip", "fa-tachometer-alt", "fa-battery-full", "fa-plug", "fa-bolt", "fa-oil-can", "fa-gas-pump", "fa-temperature-high",
+    "fa-shield-alt", "fa-key", "fa-lock", "fa-unlock-alt", "fa-wifi", "fa-broadcast-tower", "fa-satellite-dish", "fa-laptop",
+    "fa-folder", "fa-folder-open", "fa-file-alt", "fa-file-pdf", "fa-file-invoice", "fa-database", "fa-book", "fa-road",
+    "fa-network-wired", "fa-sitemap", "fa-sync-alt", "fa-history", "fa-chart-bar", "fa-chart-line", "fa-clipboard-list", "fa-tasks",
+    "fa-video", "fa-play-circle", "fa-headphones", "fa-headset", "fa-phone-alt", "fa-envelope", "fa-user", "fa-users-cog"
+];
 
 let deviceId = localStorage.getItem('drcardata_device_id');
 if (!deviceId) {
@@ -782,34 +1050,419 @@ if (!deviceId) {
     localStorage.setItem('drcardata_device_id', deviceId);
 }
 let deviceCheckInterval = null;
-
 let currentUser = null;
 let menuStack = []; 
 let isDraggingTile = false; 
+let appsData = []; 
+let usersData = []; 
 
-let appsData = []; let usersData = []; let headerConfig = {}; 
-
-window.chatMessagesData = [];
-try {
-    const stored = localStorage.getItem('drcardata_chat_history');
-    if (stored) window.chatMessagesData = JSON.parse(stored);
-} catch(e){}
-
-if (window.chatMessagesData.length === 0) {
-    window.chatMessagesData = [{ 
-        sender: 'system', 
-        name: 'SYSTEM', 
-        text: 'Secure communication channel established. End-to-end local encryption active.', 
-        time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
-    }];
-}
+// INISIALISASI AMAN KONFIGURASI HEADER (Agar tidak pernah undefined saat dipanggil pertama kali)
+let headerConfig = {
+    logoText: "Dr.Mesin",
+    modelText: "X-431 PAD9 LINK",
+    snText: "S.N:98760000003 V8.00.027",
+    adminWA: "6281238625051",
+    globalNotification: "Selamat datang di DrCardata PRO! Koneksi telemetri Cloud terhubung sempurna."
+};
 
 let currentZoomLevel = 1;
+let appDictionary = {};
+let chatMessagesData = [];
+let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
+let isLocalFallbackAuth = false; // Status jika menggunakan autentikasi lokal darurat tanpa Firebase Auth
+
+async function autoSetupDatabase() {
+    // Lewati setup Firestore jika sesi login anonim memang gagal total dan tidak memiliki kredensial apa pun
+    if (!auth.currentUser && !isLocalFallbackAuth) {
+        console.warn("Otentikasi Firebase bermasalah. Fungsi Setup dilewati untuk mencegah error permission.");
+        return;
+    }
+    
+    try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'headerConfig');
+        const checkDoc = await getDoc(docRef);
+        
+        if (checkDoc && typeof checkDoc.exists === 'function' && checkDoc.exists()) {
+            const data = checkDoc.data();
+            if (data) {
+                headerConfig = data; // Muat konfigurasi dari DB yang sudah ada
+            }
+            console.log("Database sudah terisi. Melewati inisialisasi otomatis.");
+            return;
+        }
+
+        console.log("Database kosong! Menjalankan instalasi struktur telemetri default...");
+        
+        // 1. Inisialisasi Header Config
+        const defaultHeader = {
+            logoText: "Dr.Mesin",
+            modelText: "X-431 PAD9 LINK",
+            snText: "S.N:98760000003 V8.00.027",
+            adminWA: "6281238625051",
+            globalNotification: "Selamat datang di DrCardata PRO! Koneksi telemetri Cloud terhubung sempurna."
+        };
+        await setDoc(docRef, defaultHeader);
+        headerConfig = defaultHeader;
+
+        // 2. Inisialisasi Akun Anggota Default (Termasuk Admin & Tester) - disembunyikan menggunakan Base64
+        const defaultUsers = [
+            { id: "admin_master", username: atob("ZHJtZXNpbjAz"), pass: atob("YWRtaW4xMjM="), role: "Admin", nama: "Admin Telemetri Master", email: "admin@drmesin.com", phone: "6281238625051", exp: "2030-12-31", devices: "[]" },
+            { id: "tester_pro", username: atob("bWVrYW5pa19wcm8="), pass: atob("MTIzNDU="), role: "PRO", nama: "Tester Anggota PRO", email: "pro@drmesin.com", phone: "628111222333", exp: "2029-12-31", devices: "[]" },
+            { id: "tester_ultimate", username: atob("bWVrYW5pa192aXA="), pass: atob("MTIzNDU="), role: "ULTIMATE", nama: "Tester Anggota ULTIMATE", email: "ultimate@drmesin.com", phone: "628111222444", exp: "2029-12-31", devices: "[]" },
+            { id: "tester_reguler", username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Mekanik Regular", email: "reguler@drmesin.com", phone: "628111222555", exp: "2029-12-31", devices: "[]" }
+        ];
+
+        for (let user of defaultUsers) {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.id), user);
+        }
+
+        // 3. Inisialisasi Modul Antarmuka Default
+        const defaultMenus = [
+            { id: "m1", parentId: null, title: "INTELLIGENT DIAGNOSE", type: "large-red", icon: "fa-microchip", badge: "", contentType: "html", content: "<div class='content-box'><h3>System Ready</h3><p>System will automatically scan vehicle topology network.</p></div>" },
+            { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red", icon: "fa-cogs", badge: "VIP", contentType: "html", content: "<div class='content-box'><h3>Autotrans Active</h3><p>Diagnostic transmission systems interfaces.</p></div>" },
+            { id: "m3", parentId: null, title: "GLOBAL AUTO FLUID", type: "small-dark", icon: "fa-network-wired", badge: "", contentType: "folder", content: "" },
+            { id: "m4", parentId: null, title: "LOCAL DIAGNOSE", type: "small-dark", icon: "fa-wrench", badge: "", contentType: "folder", content: "" },
+            { id: "m5", parentId: null, title: "ECU", type: "small-dark_PRO", icon: "fa-tachometer-alt", badge: "PRO", contentType: "folder", content: "" },
+            { id: "m6", parentId: null, title: "SERVICE FUNCTION", type: "small-dark", icon: "fa-sync-alt", badge: "", contentType: "folder", content: "" },
+            { id: "m7", parentId: null, title: "SERTIFIKASI MEKANIK", type: "small-dark", icon: "fa-database", badge: "", contentType: "folder", content: "" },
+            { id: "m8", parentId: null, title: "OIL RESET", type: "small-dark", icon: "fa-oil-can", badge: "", contentType: "folder", content: "" },
+            { id: "m9", parentId: null, title: "VIDEO AREA", type: "small-dark", icon: "fa-video", badge: "", contentType: "folder", content: "" },
+            { id: "m10", parentId: null, title: "IGNITIONSPEC", type: "small-dark", icon: "fa-bolt", badge: "", contentType: "folder", content: "" },
+            { id: "m11", parentId: null, title: "IMMOBILIZER", type: "small-dark", icon: "fa-shield-alt", badge: "", contentType: "folder", content: "" },
+            { id: "m12", parentId: null, title: "TUTORIAL MP4", type: "small-dark", icon: "fa-play-circle", badge: "", contentType: "folder", content: "" },
+            { id: "m13", parentId: null, title: "QUICK SUPPORT", type: "small-dark", icon: "fa-headset", badge: "HOT", contentType: "teamviewer", content: "" },
+            
+            { id: "b1", parentId: null, title: "FAMIL SETTING", type: "bottom-tab", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>FAMIL SETTING</h3><p>Diagnostic parameter settings and calibration threshold configurations.</p></div>" },
+            { id: "b2", parentId: null, title: "GOVER SCRUE", type: "bottom-tab", icon: "fa-file-invoice", badge: "", contentType: "html", content: "<div class='content-box'><h3>GOVER SCRUE</h3><p>Official diagnostic compliance protocols, security certificates, and legal compliance registries.</p></div>" },
+            { id: "b3", parentId: null, title: "SYSTENCE ATATS", type: "bottom-tab", icon: "fa-briefcase", badge: "", contentType: "html", content: "<div class='content-box'><h3>SYSTENCE ATATS</h3><p>System status reports, firmware patch configurations, and core memory state logs.</p></div>" },
+            { id: "b4", parentId: null, title: "SETTINGH PODE", type: "bottom-tab", icon: "fa-tools", badge: "", contentType: "html", content: "<div class='content-box'><h3>SETTINGH PODE</h3><p>Advanced diagnostic settings, interface customization options, and secure cryptographic code settings.</p></div>" }
+        ];
+
+        for (let menu of defaultMenus) {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', menu.id), menu);
+        }
+
+        console.log("Auto setup database selesai dengan sukses.");
+    } catch (e) {
+        console.error("Gagal melakukan penyiapan data awal database: ", e);
+        if (e.code === 'permission-denied') {
+            console.warn("Akses ditolak. Aturan database Anda kemungkinan membutuhkan otentikasi aktif.");
+        }
+    }
+}
+
+function listenToSecureChat() {
+    if (!auth.currentUser && !isLocalFallbackAuth) return;
+    try {
+        const chatQuery = query(collection(db, 'artifacts', appId, 'public', 'data', 'chat'));
+        onSnapshot(chatQuery, (snapshot) => {
+            let loadedChats = [];
+            snapshot.forEach(doc => {
+                loadedChats.push(doc.data());
+            });
+            loadedChats.sort((a, b) => a.timestamp - b.timestamp);
+            if (loadedChats.length > 0) {
+                chatMessagesData = loadedChats;
+                if (document.getElementById('chatScreen').style.display === 'flex') {
+                    renderChatMessages();
+                }
+            }
+        }, (error) => {
+            console.error("Error loading chat stream:", error);
+        });
+    } catch(e) {
+        console.warn("Gagal mendengarkan kanal chat:", e);
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput'); 
+    const text = input.value.trim();
+    if(!text || !currentUser) return;
+    
+    const now = new Date(); 
+    const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+    
+    const payload = {
+        sender: currentUser.username,
+        name: currentUser.nama,
+        text: text,
+        time: timeStr,
+        timestamp: Date.now()
+    };
+    
+    input.value = ''; 
+    try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat'), payload);
+    } catch(e) {
+        console.error("Gagal mengirim pesan chat:", e);
+    }
+}
+
+async function authorizeFirebaseSession() {
+    try {
+        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        if (token && IS_PREVIEW) {
+            try {
+                await signInWithCustomToken(auth, token);
+                console.log("Firebase Auth: Sukses masuk dengan token terenkripsi.");
+                isLocalFallbackAuth = false;
+                return;
+            } catch(tokenErr) {
+                console.warn("Firebase Auth: Token mismatch, langsung beralih ke Anonymous Login...", tokenErr);
+            }
+        }
+        
+        await signInAnonymously(auth);
+        console.log("Firebase Auth: Sukses masuk secara Anonim.");
+        isLocalFallbackAuth = false;
+    } catch(err) {
+        console.error("Gagal memulai otorisasi Secure Cloud Session:", err);
+        
+        // JARING PENGAMAN: Jika metode login anonim dinonaktifkan di Firebase Console
+        if (err.code === 'auth/admin-restricted-operation' || err.code === 'auth/operation-not-allowed') {
+            console.warn("Anonymous Sign-In dinonaktifkan di Firebase Console. Menggunakan fallback otorisasi lokal...");
+            isLocalFallbackAuth = true;
+            
+            // Tampilkan petunjuk pengaktifan tanpa memblokir siklus masuk pengguna
+            setTimeout(() => {
+                appAlert("Pemberitahuan Sistem:\nMetode masuk 'Anonymous' (Anonim) belum diaktifkan di Firebase Console Anda.\n\nSilakan masuk ke Firebase Console -> Authentication -> Sign-in Method, lalu aktifkan mode 'Anonymous'. Aplikasi saat ini tetap berjalan menggunakan mode fallback darurat.", "Konfigurasi Firebase", "warning");
+            }, 3000);
+        } else {
+            isLocalFallbackAuth = true;
+        }
+    }
+}
+
+async function prosesLogin() {
+    const userEl = document.getElementById('username');
+    const passEl = document.getElementById('password');
+    let userVal = userEl.value.trim();
+    let passVal = passEl.value.trim();
+    
+    if(!userVal || !passVal) {
+        const savedU = localStorage.getItem('drc_u');
+        const savedP = localStorage.getItem('drc_p');
+        if(savedU && savedP) {
+            userVal = atob(savedU);
+            passVal = atob(savedP);
+        }
+    }
+    
+    userEl.value = '';
+    passEl.value = '';
+    
+    if(!userVal || !passVal) return appAlert("System ID dan Password wajib diisi!", "Authentication Error", "error");
+
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    // Auto re-auth jika sesi Firebase terputus (dan tidak sedang dalam mode fallback lokal)
+    if (!auth.currentUser && !isLocalFallbackAuth) {
+        console.log("Sesi auth kosong, mencoba masuk kembali ke gerbang Cloud...");
+        await authorizeFirebaseSession();
+    }
+
+    try {
+        let foundUser = null;
+        
+        // Tarik data pengguna. Jika terjadi kesalahan permission (karena Anonymous Auth dinonaktifkan), gunakan fallback Admin master lokal
+        try {
+            const userSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+            userSnap.forEach(docSnap => {
+                const data = docSnap.data();
+                if (data.username === userVal && data.pass === passVal) {
+                    foundUser = { dbId: docSnap.id, ...data };
+                }
+            });
+        } catch(dbErr) {
+            console.warn("Akses database langsung sebelum otentikasi ditolak. Mengandalkan fallback akun admin master...", dbErr);
+        }
+
+        // Safety Net Master Admin (Bypass otentikasi database jika Firestore terkunci/belum aktif) - disembunyikan menggunakan Base64
+        if (!foundUser && userVal === atob("ZHJtZXNpbjAz") && passVal === atob("YWRtaW4xMjM=")) {
+            foundUser = {
+                id: "admin_master", dbId: "admin_master", username: atob("ZHJtZXNpbjAz"), pass: atob("YWRtaW4xMjM="), 
+                role: "Admin", nama: "Admin Telemetri Master", exp: "2099-12-31", devices: "[]"
+            };
+            try { 
+                if (auth.currentUser || isLocalFallbackAuth) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', 'admin_master'), foundUser); 
+                }
+            } catch(e) {
+                console.warn("Tidak dapat menyimpan data admin ke DB, sesi admin lokal aktif.", e);
+            }
+        }
+
+        if (foundUser) {
+            let activeDevices = [];
+            try {
+                activeDevices = JSON.parse(foundUser.devices || "[]");
+            } catch(e) {
+                activeDevices = [];
+            }
+
+            // Aturan Kunci Perangkat Ganda (Maksimal 2 Device aktif) - Kecuali Admin
+            if (foundUser.role !== 'Admin' && !activeDevices.includes(deviceId)) {
+                if (activeDevices.length >= 2) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    return appAlert("Akses ditolak! Batas maksimal login 2 Perangkat telah terlampaui.", "Device Locked", "error");
+                }
+                activeDevices.push(deviceId);
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', foundUser.dbId), {
+                        devices: JSON.stringify(activeDevices)
+                    });
+                } catch(devErr) {
+                    console.warn("Gagal memperbarui daftar perangkat aktif di DB:", devErr);
+                }
+            }
+
+            localStorage.setItem('drc_u', btoa(userVal));
+            localStorage.setItem('drc_p', btoa(passVal));
+
+            if(getDaysRemaining(foundUser.exp) < 0) {
+                document.getElementById('expiredUsername').innerText = foundUser.username;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('expiredScreen').style.display = 'flex';
+                document.getElementById('loadingOverlay').style.display = 'none';
+                return;
+            }
+
+            // Muat data aplikasi menu routing secara aman
+            appsData = [];
+            try {
+                const appsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'apps'));
+                appsSnap.forEach(d => {
+                    appsData.push({ id: d.id, ...d.data() });
+                });
+            } catch(appsErr) {
+                console.warn("Gagal menarik modul routing dari DB. Menggunakan menu statis bawaan...");
+            }
+
+            // Jika database kosong, suntikkan data default
+            if (appsData.length === 0) {
+                appsData = [
+                    { id: "m1", parentId: null, title: "INTELLIGENT DIAGNOSE", type: "large-red", icon: "fa-microchip", badge: "", contentType: "html", content: "<div class='content-box'><h3>System Ready</h3><p>System will automatically scan vehicle topology network.</p></div>" },
+                    { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red", icon: "fa-cogs", badge: "VIP", contentType: "html", content: "<div class='content-box'><h3>Autotrans Active</h3><p>Diagnostic transmission systems interfaces.</p></div>" },
+                    { id: "m3", parentId: null, title: "GLOBAL AUTO FLUID", type: "small-dark", icon: "fa-network-wired", badge: "", contentType: "folder", content: "" },
+                    { id: "m4", parentId: null, title: "LOCAL DIAGNOSE", type: "small-dark", icon: "fa-wrench", badge: "", contentType: "folder", content: "" },
+                    { id: "m5", parentId: null, title: "ECU", type: "small-dark_PRO", icon: "fa-tachometer-alt", badge: "PRO", contentType: "folder", content: "" },
+                    { id: "m13", parentId: null, title: "QUICK SUPPORT", type: "small-dark", icon: "fa-headset", badge: "HOT", contentType: "teamviewer", content: "" },
+                    { id: "b1", parentId: null, title: "FAMIL SETTING", type: "bottom-tab", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>FAMIL SETTING</h3><p>Diagnostic parameter settings and calibration threshold configurations.</p></div>" }
+                ];
+            }
+
+            // Tarik Konfigurasi Header secara aman
+            try {
+                const configSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'headerConfig'));
+                if (configSnap && typeof configSnap.exists === 'function' && configSnap.exists()) {
+                    const data = configSnap.data();
+                    if (data) {
+                        headerConfig = data;
+                    }
+                }
+            } catch(e) {
+                console.warn("Gagal menarik config dari DB, menggunakan data lokal default.");
+            }
+
+            // Tarik Semua Pengguna untuk daftar admin secara aman
+            usersData = [];
+            try {
+                const userSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+                userSnap.forEach(u => {
+                    usersData.push({ id: u.id, ...u.data() });
+                });
+            } catch(uErr) {
+                usersData = [foundUser];
+            }
+
+            updateAppDictionary();
+            loginSuccess(foundUser);
+            listenToSecureChat();
+
+        } else {
+            localStorage.removeItem('drc_u');
+            localStorage.removeItem('drc_p');
+            appAlert("System ID atau Password salah!", "Akses Ditolak", "error");
+        }
+    } catch(error) {
+        console.error("Kesalahan proses login:", error);
+        appAlert("Terjadi kegagalan komunikasi database: " + error.message, "System Error", "error");
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+}
+
+async function executeLogout() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    try {
+        if (currentUser && currentUser.role !== 'Admin' && !isLocalFallbackAuth) {
+            const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.dbId || currentUser.id));
+            if (userDocSnap.exists()) {
+                let currentDevices = JSON.parse(userDocSnap.data().devices || "[]");
+                currentDevices = currentDevices.filter(d => d !== deviceId);
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.dbId || currentUser.id), {
+                    devices: JSON.stringify(currentDevices)
+                });
+            }
+        }
+    } catch(e) {
+        console.warn("Gagal melepas kunci perangkat:", e);
+    }
+
+    currentUser = null; 
+    menuStack = [];
+    clearInterval(deviceCheckInterval);
+    
+    localStorage.removeItem('drc_u');
+    localStorage.removeItem('drc_p');
+    localStorage.removeItem('drc_last_ip');
+    
+    document.getElementById('username').value = ''; 
+    document.getElementById('password').value = '';
+    document.getElementById('loginBox').classList.remove('active');
+    
+    ['detailScreen', 'adminScreen', 'profileScreen', 'dashboardScreen', 'mainHeader', 'chatScreen', 'expiredScreen', 'htmlPreviewerModal'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.style.display='none';
+    });
+    
+    if(flipbookState.ctx) {
+         flipbookState.ctx.clearRect(0, 0, flipbookState.canvas.width, flipbookState.canvas.height);
+         flipbookState.pdfDoc = null; 
+    }
+    
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+async function getIP() {
+    try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+    } catch(e) { return "Unknown"; }
+}
+
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input && icon) {
+        if (input.type === "password") {
+            input.type = "text";
+            icon.className = "fas fa-eye-slash";
+            icon.style.color = "var(--primary-red)";
+        } else {
+            input.type = "password";
+            icon.className = "fas fa-eye";
+            icon.style.color = "var(--text-muted)";
+        }
+    }
+}
 
 function changeZoom(delta) {
     currentZoomLevel += delta;
     if (currentZoomLevel < 0.5) currentZoomLevel = 0.5;
-    if (currentZoomLevel > 5.0) currentZoomLevel = 5.0; 
+    if (currentZoomLevel > 5.0) currentZoomLevel = 5.0;
     applyZoom();
 }
 
@@ -820,18 +1473,17 @@ function resetZoom() {
 
 function applyZoom() {
     const detailContent = document.getElementById('detailContent');
-    const target = detailContent.firstElementChild; 
+    const target = detailContent.firstElementChild;
     const label = document.getElementById('zoomLabel');
     
     if(target && label) {
         label.innerText = Math.round(currentZoomLevel * 100) + '%';
-        
         target.style.zoom = currentZoomLevel;
-        target.style.transformOrigin = 'top left'; 
+        target.style.transformOrigin = 'top left';
         
         if (currentZoomLevel > 1) {
             detailContent.style.overflow = 'auto';
-            detailContent.style.touchAction = 'pan-x pan-y';
+            detailContent.style.touchAction = 'pan-x pan-y'; 
         } else {
             detailContent.style.overflow = 'hidden';
             detailContent.style.touchAction = 'none';
@@ -850,7 +1502,6 @@ function applyZoom() {
     }
 }
 
-let appDictionary = {}; 
 function updateAppDictionary() {
     appDictionary = {};
     for (let i = 0, len = appsData.length; i < len; i++) {
@@ -859,6 +1510,7 @@ function updateAppDictionary() {
 }
 
 function canAccess(app) {
+    if(!app) return false;
     if(!currentUser) return false;
     if(currentUser.role === 'Admin') return true;
     
@@ -870,8 +1522,6 @@ function canAccess(app) {
     
     return false;
 }
-
-let flipbookState = { pdfDoc: null, pageNum: 1, isRendering: false, pageNumPending: null, canvas: null, ctx: null, wrapper: null, touchStartX: 0 };
 
 function initHTML5Flipbook(app) {
     let rawUrl = app.content.trim(); let pdfUrl = rawUrl;
@@ -1002,29 +1652,6 @@ function renderSecureIframeFallback(app, rawUrl) {
     `;
 }
 
-const fetchWithTimeout = async (resource, options = {}) => {
-    const { timeout = 15000 } = options;
-    const controller = new AbortController(); const id = setTimeout(() => controller.abort(), timeout);
-    const response = await fetch(resource, { ...options, signal: controller.signal });
-    clearTimeout(id); return response;
-};
-
-async function apiRequest(action, payload) {
-    if (IS_PREVIEW) return { success: false, message: "Preview mode disabled."};
-    if (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "") return { success: false, message: "URL Database GAS belum dipasang pada script!" };
-    
-    try {
-        const response = await fetchWithTimeout(GAS_URL, {
-            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: action, data: payload }), redirect: 'follow', timeout: 15000 
-        });
-        const responseText = await response.text();
-        try { return JSON.parse(responseText); } catch (jsonErr) { return { success: false, message: "Akses Ditolak Server Google." }; }
-    } catch (error) { 
-        return { success: false, message: error.name === 'AbortError' ? "Koneksi lambat (Timeout). Silakan coba lagi." : "Koneksi terputus." }; 
-    }
-}
-
 let dialogCallback = null;
 
 function showCustomAlert(message, title = "System Notification", type = "alert") {
@@ -1048,26 +1675,10 @@ function closeCustomDialog() { document.getElementById('customDialogOverlay').st
 document.getElementById('btnDialogOk').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(true); dialogCallback = null; } };
 document.getElementById('btnDialogCancel').onclick = function() { closeCustomDialog(); if(dialogCallback) { dialogCallback(false); dialogCallback = null; } };
 
-const iconList = [
-    'fa-microchip', 'fa-network-wired', 'fa-wrench', 'fa-sync-alt', 'fa-database', 'fa-car', 'fa-oil-can', 'fa-car-crash',
-    'fa-file-pdf', 'fa-play-circle', 'fa-globe', 'fa-cogs', 'fa-user', 'fa-users', 'fa-laptop', 'fa-mobile-alt',
-    'fa-server', 'fa-cloud', 'fa-shield-alt', 'fa-lock', 'fa-key', 'fa-tools', 'fa-toolbox', 'fa-car-battery',
-    'fa-plug', 'fa-charging-station', 'fa-gas-pump', 'fa-tachometer-alt', 'fa-thermometer-half', 'fa-fan', 'fa-bolt', 'fa-lightbulb',
-    'fa-video', 'fa-camera', 'fa-images', 'fa-map-marker-alt', 'fa-route', 'fa-chart-line', 'fa-clipboard-list', 'fa-tasks',
-    'fa-calendar-alt', 'fa-clock', 'fa-calculator', 'fa-book', 'fa-folder', 'fa-save', 'fa-edit', 'fa-plus',
-    'fa-check', 'fa-exclamation-triangle', 'fa-info-circle', 'fa-search', 'fa-home', 'fa-satellite-dish', 'fa-wifi', 'fa-bluetooth',
-    'fa-power-off', 'fa-cog', 'fa-link', 'fa-qrcode', 'fa-comment-dots', 'fa-comments', 'fa-headset', 'fa-desktop', 'fa-laptop-house', 'fa-file-alt'
-];
-
-document.addEventListener("DOMContentLoaded", function() {
-    renderIconGrid(); 
-    
-    const splashStatus = document.getElementById('splashStatusText');
-    if(splashStatus) {
-        setTimeout(() => { splashStatus.innerText = "ESTABLISHING SECURE COMMS..."; }, 800);
-        setTimeout(() => { splashStatus.innerText = "LOADING MODULES..."; }, 1500);
-        setTimeout(() => { splashStatus.innerText = "SYSTEM READY"; splashStatus.style.color = "#10b981"; }, 2200);
-    }
+window.addEventListener('load', async function() {
+    renderIconGrid();
+    await authorizeFirebaseSession();
+    await autoSetupDatabase();
 
     setTimeout(() => {
         const splash = document.getElementById('welcomeScreen');
@@ -1076,67 +1687,54 @@ document.addEventListener("DOMContentLoaded", function() {
             splash.style.transform = 'scale(1.1)'; 
             setTimeout(() => { 
                 splash.style.display = 'none'; 
-                document.getElementById('loginScreen').style.display = 'flex'; 
-                revealLogin(); 
+                
+                const savedU = localStorage.getItem('drc_u');
+                const savedP = localStorage.getItem('drc_p');
+                if(savedU && savedP) {
+                    document.getElementById('username').value = atob(savedU);
+                    document.getElementById('password').value = atob(savedP);
+                    prosesLogin();
+                } else {
+                    document.getElementById('loginScreen').style.display = 'flex'; 
+                    revealLogin(); 
+                }
             }, 600); 
         }
-    }, 2600); 
+    }, 2000); 
 });
 
 function revealLogin() {
     const loginBox = document.getElementById('loginBox');
     if (!loginBox.classList.contains('active')) {
         loginBox.classList.add('active');
-        setTimeout(() => document.getElementById('username').focus(), 400);
+        setTimeout(() => {
+            const uInput = document.getElementById('username');
+            if (uInput) uInput.focus();
+        }, 400);
     }
 }
 
 function handleLoginEnter(e) { if (e.key === 'Enter') { prosesLogin(); } }
 
 function applyHeaderConfig() {
+    if (!headerConfig) {
+        headerConfig = {
+            logoText: "Dr.Mesin",
+            modelText: "X-431 PAD9 LINK",
+            snText: "S.N:98760000003 V8.00.027"
+        };
+    }
     let logoHtml = headerConfig.logoText || "Dr.Mesin";
     if(logoHtml.toLowerCase().includes('mesin')) { logoHtml = logoHtml.replace(/mesin/i, "<span>$&</span>"); }
     document.getElementById('displayHeaderLogo').innerHTML = logoHtml;
-    
-    // Setting defaults to match reference image if not set
-    document.getElementById('displayHeaderModel').innerText = headerConfig.modelText || "DR CAR DATA";
-    document.getElementById('displayHeaderSN').innerText = headerConfig.snText || "REPAIR, MAINTENANCE, and MODIFICATION";
+    document.getElementById('displayHeaderModel').innerText = headerConfig.modelText || "SCANNER";
+    document.getElementById('displayHeaderSN').innerText = headerConfig.snText || "";
 }
 
 function getDaysRemaining(expDateStr) {
     if(!expDateStr) return 0;
     const exp = new Date(expDateStr); const today = new Date();
     return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-}
-
-async function prosesLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    
-    if(!user || !pass) return appAlert("System ID dan Password wajib diisi!", "Authentication Error", "error");
-    if(!IS_PREVIEW && (GAS_URL === "URL_DEPLOY_GAS_ANDA_DISINI" || GAS_URL === "")) return appAlert("Sistem belum dihubungkan ke Database.", "Warning", "warning");
-
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    const data = await apiRequest('login', { user: user, pass: pass, deviceId: deviceId });
-    document.getElementById('loadingOverlay').style.display = 'none';
-    
-    if(data.success) {
-        if(getDaysRemaining(data.user.exp) < 0) {
-            document.getElementById('expiredUsername').innerText = data.user.username;
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('expiredScreen').style.display = 'flex';
-            return;
-        }
-        
-        appsData = data.apps || [];
-        updateAppDictionary(); 
-        usersData = data.allUsers || [];
-        headerConfig = data.config || headerConfig;
-        
-        loginSuccess(data.user);
-    } else { 
-        appAlert("Akses Ditolak: " + data.message, "Security Alert", "error"); 
-    }
 }
 
 function contactAdminWA() {
@@ -1160,32 +1758,44 @@ function loginSuccess(userData) {
     applyHeaderConfig(); 
     renderDynamicApps(); 
 
-    if (typeof window.initFirebaseForChat === 'function') {
-        window.initFirebaseForChat().then(success => {
-            if (success) {
-                window.listenToGlobalChat();
-            }
-        });
-    }
+    getIP().then(ip => {
+        if(ip !== "Unknown") localStorage.setItem('drc_last_ip', ip);
+    });
 
     clearInterval(deviceCheckInterval);
     deviceCheckInterval = setInterval(async () => {
         if (currentUser) {
-            const res = await apiRequest('check_device', { user: currentUser.username, deviceId: deviceId });
-            if (!res.success) {
-                appAlert("Sesi Berakhir! Akun Anda telah digunakan masuk di perangkat lain melebihi batas maksimal (2 Device).", "Security Logout", "error");
-                logout(true); 
+            const currentIp = await getIP();
+            const savedIp = localStorage.getItem('drc_last_ip');
+            
+            if (savedIp && currentIp !== "Unknown" && currentIp !== savedIp) {
+                appAlert("Perubahan IP dikesan! Sesi anda dihentikan atas faktor keselamatan.", "Security Logout", "error");
+                executeLogout(); 
+                return;
+            }
+
+            // Pengecekan Perangkat Aktif dari Firestore
+            if (!isLocalFallbackAuth) {
+                const uCheckSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.dbId || currentUser.id));
+                if (uCheckSnap.exists()) {
+                    const uData = uCheckSnap.data();
+                    const activeDevices = JSON.parse(uData.devices || "[]");
+                    if (!activeDevices.includes(deviceId)) {
+                        appAlert("Sesi Berakhir! Akun Anda telah digunakan masuk di perangkat lain.", "Security Logout", "error");
+                        executeLogout(); 
+                    }
+                }
             }
         }
-    }, 120000);
+    }, 120000); 
 
     if (headerConfig.globalNotification && headerConfig.globalNotification.trim() !== '') {
         setTimeout(() => { appAlert(headerConfig.globalNotification, "PENGUMUMAN SISTEM", "info"); }, 500);
     }
 }
 
-function saveNewOrder(container) {
-    const tiles = container.querySelectorAll('.tile[data-id]');
+async function saveNewOrder(container) {
+    const tiles = container.querySelectorAll('.tile[data-id], .bottom-tile[data-id]');
     const newOrderIds = Array.from(tiles).map(t => t.getAttribute('data-id'));
     if (newOrderIds.length === 0) return;
 
@@ -1199,7 +1809,13 @@ function saveNewOrder(container) {
     appsData = newAppsData.concat(itemsToReorder);
     updateAppDictionary();
     
-    apiRequest('sync_apps', appsData).catch(err => console.error("Gagal urut di background:", err));
+    try {
+        for (let appObj of appsData) {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', appObj.id), appObj);
+        }
+    } catch(e) {
+        console.error("Gagal sinkronisasi urutan menu ke Cloud Firestore: ", e);
+    }
 }
 
 function renderDynamicApps() {
@@ -1218,37 +1834,45 @@ function renderDynamicApps() {
         
         let accessIcon = '';
         let reqAccess = (app.type && app.type.includes('_')) ? app.type.split('_')[1] : '';
-        
-        // Cek reqAccess atau Role User untuk menampilkan Crown/Star
-        if (reqAccess === 'PRO' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'PRO')) {
-            accessIcon = `<i class="fas fa-star badge-icon star"></i>`;
-        }
-        if (reqAccess === 'ULTIMATE' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'ULTIMATE')) {
-            accessIcon = `<i class="fas fa-crown badge-icon crown"></i>`;
+        if (currentUser && currentUser.role === 'Admin') {
+            if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+            if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
         }
 
         let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
-        const badgeHtml = app.badge ? `<div class="badge">${app.badge}</div>` : '';
-        
-        // Tambahkan elemen watermark
-        let watermarkHtml = `<i class="fas ${app.icon} tile-watermark"></i>`;
         
         if(baseType === 'large-red') {
-            leftHtml += `<div class="tile red-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${watermarkHtml}${accessIcon}
-                            <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title.replace('&', '&<br>')}</div></div>
-                         </div>`;
+            leftHtml += `
+                <div class="tile red-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">
+                    ${accessIcon}
+                    <i class="fas ${app.icon} red-tile-bg-icon"></i>
+                    <i class="fas ${app.icon}"></i>
+                    <div class="title">${app.title.replace('&', '&<br>')}</div>
+                </div>
+            `;
         } else if (baseType === 'bottom-tab') {
-            bottomHtml += `<div class="tile bottom-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${watermarkHtml}${accessIcon}${badgeHtml}
-                             <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>
-                           </div>`;
+            let sparkleHtml = '';
+            if (app.title.toUpperCase().includes('SETTINGH') || app.title.toUpperCase().includes('SETTING')) {
+                sparkleHtml = `<span class="sparkle-decor"><i class="fas fa-sparkles"></i></span>`;
+            }
+            bottomHtml += `
+                <div class="bottom-tile" data-id="${app.id}" onclick="openMenu('${app.id}')">
+                    ${accessIcon}
+                    ${sparkleHtml}
+                    <i class="fas ${app.icon} bottom-tile-bg-icon"></i>
+                    <i class="fas ${app.icon}"></i>
+                    <div class="title">${app.title}</div>
+                </div>
+            `;
         } else {
-            rightHtml += `<div class="tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}${badgeHtml}
-                            <div class="tile-content-wrapper"><i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>
-                          </div>`;
+            const badgeHtml = app.badge ? `<div class="badge">${app.badge}</div>` : '';
+            rightHtml += `<div class="tile" data-id="${app.id}" onclick="openMenu('${app.id}')">${accessIcon}${badgeHtml}<i class="fas ${app.icon}"></i><div class="title">${app.title}</div></div>`;
         }
     }
 
-    if(currentUser && currentUser.role === 'Admin') { rightHtml += `<div class="tile add-tile" onclick="openAdminPanel()"><div class="tile-content-wrapper"><i class="fas fa-plus"></i></div></div>`; }
+    if(currentUser && currentUser.role === 'Admin') { 
+        rightHtml += `<div class="tile add-tile" onclick="openAdminPanel()"><i class="fas fa-plus"></i></div>`; 
+    }
 
     leftPane.innerHTML = leftHtml;
     rightPane.innerHTML = rightHtml;
@@ -1260,6 +1884,7 @@ function renderDynamicApps() {
             onStart: function() { isDraggingTile = true; },
             onEnd: function(evt) { setTimeout(() => isDraggingTile = false, 50); if(evt.oldIndex !== evt.newIndex) saveNewOrder(rightPane); }
         });
+        
         Sortable.create(bottomPane, {
             animation: 150, delay: 150, delayOnTouchOnly: true, ghostClass: 'sortable-ghost', fallbackOnBody: true,
             onStart: function() { isDraggingTile = true; },
@@ -1268,9 +1893,9 @@ function renderDynamicApps() {
     }
 }
 
-function openMenu(appId) {
+function openMenu(targetAppId) {
     if (isDraggingTile) return; 
-    const app = appDictionary[appId];
+    const app = appDictionary[targetAppId];
     if(!app) return;
     menuStack.push(app);
     renderCurrentMenuState();
@@ -1284,27 +1909,6 @@ function logout(force = false) {
             if(agreed) executeLogout();
         });
     }
-}
-
-function executeLogout() {
-    currentUser = null; 
-    menuStack = [];
-    clearInterval(deviceCheckInterval);
-    
-    document.getElementById('username').value = ''; 
-    document.getElementById('password').value = '';
-    document.getElementById('loginBox').classList.remove('active');
-    
-    ['detailScreen', 'adminScreen', 'profileScreen', 'dashboardScreen', 'mainHeader', 'chatScreen', 'expiredScreen', 'htmlPreviewerModal'].forEach(id => {
-        const el = document.getElementById(id); if(el) el.style.display='none';
-    });
-    
-    if(flipbookState.ctx) {
-         flipbookState.ctx.clearRect(0, 0, flipbookState.canvas.width, flipbookState.canvas.height);
-         flipbookState.pdfDoc = null; 
-    }
-    
-    document.getElementById('loginScreen').style.display = 'flex';
 }
 
 function openProfile() {
@@ -1322,9 +1926,9 @@ function openProfile() {
     const statusTxt = document.getElementById('profStatus');
     
     if(sisaHari >= 0) {
-        statusTxt.innerHTML = '<span style="color:#10b981;">ACTIVE</span>'; badge.style.background = '#10b981'; badge.innerText = `Remaining: ${sisaHari} Days`;
+        statusTxt.innerHTML = '<span style="color:#10b981;">ACTIVE</span>'; badge.style.background = '#10b981'; badge.innerText = `Sisa waktu: ${sisaHari} Hari`;
     } else {
-        statusTxt.innerHTML = '<span style="color:#ff2a2a;">EXPIRED</span>'; badge.style.background = '#c62828'; badge.innerText = `License Expired!`;
+        statusTxt.innerHTML = '<span style="color:#ff2a2a;">EXPIRED</span>'; badge.style.background = '#c62828'; badge.innerText = `Siklus Lisensi Kedaluwarsa!`;
     }
     document.getElementById('profileScreen').style.display = 'flex';
 }
@@ -1342,7 +1946,7 @@ function closeModal(id) {
 
 function renderChatMessages() {
     const container = document.getElementById('chatMessages');
-    container.innerHTML = window.chatMessagesData.map(msg => {
+    container.innerHTML = chatMessagesData.map(msg => {
         const isMe = currentUser && msg.sender === currentUser.username;
         const bubbleClass = isMe ? 'chat-sent' : 'chat-recv';
         const senderName = isMe ? 'ANDA' : msg.name.toUpperCase();
@@ -1366,55 +1970,27 @@ function renderChatMessages() {
 
 function handleChatEnter(e) { if (e.key === 'Enter') sendChatMessage(); }
 
-async function sendChatMessage() {
-    const input = document.getElementById('chatInput'); 
-    const text = input.value.trim();
-    if(!text || !currentUser) return;
-    
-    input.value = ''; 
-    
-    if (window.fbDb) {
-        // Mode Firebase Global (Real-time)
-        await window.sendChatMsgToFirebase(currentUser.username, currentUser.nama, text);
-    } else {
-        // Fallback Mode Lokal (Jika Firebase belum siap)
-        const now = new Date(); 
-        const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-        window.chatMessagesData.push({ sender: currentUser.username, name: currentUser.nama, text: text, time: timeStr });
-        
-        localStorage.setItem('drcardata_chat_history', JSON.stringify(window.chatMessagesData));
-        renderChatMessages();
-    }
-}
-
 function clearChatHistory() {
-    if (window.fbDb) {
-        if (currentUser && currentUser.role !== 'Admin') {
-            appAlert("Akses Ditolak: Hanya Admin yang memiliki izin untuk menghapus riwayat obrolan global.", "Access Denied", "error");
-            return;
+    appConfirm("Bersihkan seluruh riwayat obrolan di Cloud?", async function(yes) {
+        if(yes) {
+            try {
+                const chatSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'chat'));
+                for (let d of chatSnap.docs) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chat', d.id));
+                }
+                const sysLog = {
+                    sender: 'system',
+                    name: 'SYSTEM',
+                    text: 'Riwayat obrolan pada database telah dibersihkan oleh Administrator.',
+                    timestamp: Date.now(),
+                    time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})
+                };
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat'), sysLog);
+            } catch(e) {
+                console.error("Gagal membersihkan riwayat obrolan:", e);
+            }
         }
-        appConfirm("Bersihkan seluruh riwayat obrolan global dari server untuk semua member?", async function(yes) {
-            if (yes) {
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                await window.clearGlobalChatFirebase();
-                document.getElementById('loadingOverlay').style.display = 'none';
-                appAlert("Obrolan global telah dibersihkan.", "Berhasil", "success");
-            }
-        });
-    } else {
-        appConfirm("Bersihkan seluruh riwayat obrolan di perangkat ini?", function(yes) {
-            if(yes) {
-                window.chatMessagesData = [{ 
-                    sender: 'system', 
-                    name: 'SYSTEM', 
-                    text: 'Riwayat obrolan pada perangkat ini telah dibersihkan.', 
-                    time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
-                }];
-                localStorage.setItem('drcardata_chat_history', JSON.stringify(window.chatMessagesData));
-                renderChatMessages();
-            }
-        });
-    }
+    });
 }
 
 function goBack() {
@@ -1435,6 +2011,7 @@ function goBack() {
 }
 
 function buildContentHtml(app) {
+    if (!app) return '';
     if (app.contentType === 'folder') {
         let html = `<div id="folderGrid_${app.id}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:15px;" class="folder-grid-responsive">`;
         let count = 0;
@@ -1448,17 +2025,13 @@ function buildContentHtml(app) {
             
             let accessIcon = '';
             let reqAccess = (c.type && c.type.includes('_')) ? c.type.split('_')[1] : '';
-            if (reqAccess === 'PRO' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'PRO')) {
-                accessIcon = `<i class="fas fa-star badge-icon star" style="top:8px; right:8px; font-size:1.1rem;"></i>`;
-            }
-            if (reqAccess === 'ULTIMATE' || (currentUser && currentUser.role === 'Admin' && reqAccess === 'ULTIMATE')) {
-                accessIcon = `<i class="fas fa-crown badge-icon crown" style="top:8px; right:8px; font-size:1.1rem;"></i>`;
+            if (currentUser && currentUser.role === 'Admin') {
+                if (reqAccess === 'PRO') accessIcon = `<i class="fas fa-star" style="position:absolute; top:8px; right:8px; color:silver; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
+                if (reqAccess === 'ULTIMATE') accessIcon = `<i class="fas fa-crown" style="position:absolute; top:8px; right:8px; color:gold; font-size:1.1rem; text-shadow:0 0 5px #000;"></i>`;
             }
 
             const badgeHtml = c.badge ? `<div class="badge" style="top:-5px;right:-5px;">${c.badge}</div>` : '';
-            html += `<div class="tile" data-id="${c.id}" onclick="openMenu('${c.id}')">${accessIcon}${badgeHtml}
-                        <div class="tile-content-wrapper"><i class="fas ${c.icon}"></i><div class="title">${c.title}</div></div>
-                     </div>`;
+            html += `<div class="tile" data-id="${c.id}" onclick="openMenu('${c.id}')">${accessIcon}${badgeHtml}<i class="fas ${c.icon}"></i><div class="title">${c.title}</div></div>`;
         }
         if(count === 0) return `<div class="content-box" style="text-align:center; color:var(--text-muted);"><i class="fas fa-folder-open" style="font-size:3rem; margin-bottom:15px; opacity:0.5;"></i><br>Directory empty or access denied.</div>`;
         return html + `</div>`;
@@ -1536,6 +2109,7 @@ function renderCurrentMenuState() {
     if(menuStack.length === 0) return;
     requestAnimationFrame(() => {
         const currentApp = menuStack[menuStack.length - 1]; 
+        if (!currentApp) return;
         
         let breadcrumbHtml = menuStack.map((app, idx) => {
             if (idx === menuStack.length - 1) return `<span style="color:#fff;">${app.title}</span>`;
@@ -1543,7 +2117,6 @@ function renderCurrentMenuState() {
         }).join(' <i class="fas fa-angle-right" style="color:var(--primary-red); font-size:0.9rem; margin:0 8px;"></i> ');
         
         document.getElementById('detailTitle').innerHTML = breadcrumbHtml;
-        
         const detailContent = document.getElementById('detailContent');
         
         currentZoomLevel = 1;
@@ -1553,7 +2126,6 @@ function renderCurrentMenuState() {
         detailContent.style.transform = 'none';
 
         detailContent.innerHTML = buildContentHtml(currentApp);
-        
         const zoomCtrl = document.getElementById('smartZoomCtrl');
 
         if (['pdf', 'web', 'image', 'mp4'].includes(currentApp.contentType)) {
@@ -1582,13 +2154,13 @@ function renderCurrentMenuState() {
             document.querySelector('#detailScreen .detail-header').classList.remove('visible');
             if(zoomCtrl) zoomCtrl.classList.remove('visible');
             
-            detailContent.style.padding = '25px';
+            detailContent.style.padding = '20px';
             detailContent.style.overflow = 'auto';
             detailContent.style.backgroundColor = 'transparent';
             
             if(window.innerWidth <= 480) {
                 const fGrid = document.querySelector('.folder-grid-responsive');
-                if(fGrid) fGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(110px, 1fr))';
+                if(fGrid) fGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(95px, 1fr))';
             }
         }
 
@@ -1619,12 +2191,10 @@ function renderCurrentMenuState() {
 }
 
 let quickCreateParentId = null; let rightClickedAppId = null; 
+
 document.addEventListener('contextmenu', function(e) {
-    const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
-    if (!isInput) e.preventDefault(); // ANTI COPY: Blokir klik kanan kecuali di input box
-    
     if (!currentUser || currentUser.role !== 'Admin') return; 
-    const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile'); 
+    const isDashboard = e.target.closest('#dashboardScreen'); const isDetail = e.target.closest('#detailContent'); const tile = e.target.closest('.tile, .bottom-tile'); 
     
     if (isDashboard || isDetail) {
         e.preventDefault(); rightClickedAppId = null;
@@ -1663,7 +2233,7 @@ document.addEventListener('contextmenu', function(e) {
 document.addEventListener('click', function(e) { const menu = document.getElementById('adminContextMenu'); if (menu && menu.style.display === 'block') menu.style.display = 'none'; });
 function closeContextMenu() { document.getElementById('adminContextMenu').style.display = 'none'; }
 
-function setNodeAccess(level) {
+async function setNodeAccess(level) {
     closeContextMenu();
     if(!rightClickedAppId) return;
     const index = appsData.findIndex(a => a.id === rightClickedAppId);
@@ -1678,7 +2248,11 @@ function setNodeAccess(level) {
     updateAppDictionary(); renderDynamicApps();
     if(menuStack.length > 0) renderCurrentMenuState();
     
-    apiRequest('sync_apps', appsData).catch(err => console.error("Sync Error", err));
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', app.id), app);
+    } catch(e) {
+        console.error("Gagal memperbarui level keamanan modul:", e);
+    }
 }
 
 function quickCreateNode() {
@@ -1703,8 +2277,8 @@ function openAdminPanel() {
     document.getElementById('dashboardScreen').style.display = 'none'; 
     document.getElementById('adminScreen').style.display = 'flex';
     document.getElementById('formHeaderLogo').value = headerConfig.logoText || "Dr.Mesin";
-    document.getElementById('formHeaderModel').value = headerConfig.modelText || "DR CAR DATA";
-    document.getElementById('formHeaderSN').value = headerConfig.snText || "REPAIR, MAINTENANCE, and MODIFICATION";
+    document.getElementById('formHeaderModel').value = headerConfig.modelText || "X-431";
+    document.getElementById('formHeaderSN').value = headerConfig.snText || "";
     document.getElementById('formHeaderWA').value = headerConfig.adminWA || "";
     document.getElementById('formHeaderNotif').value = headerConfig.globalNotification || '';
     renderAdminUserTable(); renderAdminAppTable();
@@ -1728,19 +2302,21 @@ function switchAdminTab(tabName) {
     }
 }
 
-function saveHeaderConfig() {
+async function saveHeaderConfig() {
     headerConfig.logoText = document.getElementById('formHeaderLogo').value || "Dr.Mesin";
-    headerConfig.modelText = document.getElementById('formHeaderModel').value || "DR CAR DATA";
-    headerConfig.snText = document.getElementById('formHeaderSN').value || "REPAIR, MAINTENANCE, and MODIFICATION";
+    headerConfig.modelText = document.getElementById('formHeaderModel').value || "X-431";
+    headerConfig.snText = document.getElementById('formHeaderSN').value || "";
     headerConfig.adminWA = document.getElementById('formHeaderWA').value || "";
     headerConfig.globalNotification = document.getElementById('formHeaderNotif').value.trim();
     
     applyHeaderConfig(); 
     appAlert("Konfigurasi Web berhasil diperbarui secara instan!", "System Updated", "success");
     
-    apiRequest('sync_config', headerConfig).then(res => {
-        if(!res.success) appAlert("Gagal menyimpan ke server: " + res.message, "Sync Error", "error");
-    });
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'headerConfig'), headerConfig);
+    } catch(e) {
+        appAlert("Gagal menyimpan ke server: " + e.message, "Sync Error", "error");
+    }
 }
 
 function renderAdminUserTable() {
@@ -1762,6 +2338,14 @@ function showUserForm(index = -1) {
     document.getElementById('userFormContainer').style.display = 'block'; 
     document.getElementById('userFormTitle').innerText = index >= 0 ? 'Edit Member Data' : 'Add New Member';
     
+    const adminPassInput = document.getElementById('formUserPassword');
+    const adminPassIcon = document.getElementById('toggleAdminPassIcon');
+    if (adminPassInput && adminPassIcon) {
+        adminPassInput.type = "password";
+        adminPassIcon.className = "fas fa-eye";
+        adminPassIcon.style.color = "var(--text-muted)";
+    }
+
     if(index === -1) { 
         ['formUserId','formUserUsername','formUserPassword','formUserNama','formUserEmail','formUserPhone','formUserExp'].forEach(id => document.getElementById(id).value = ''); 
         document.getElementById('formUserRole').value = 'Mekanik'; 
@@ -1780,49 +2364,51 @@ function showUserForm(index = -1) {
 
 function editUser(index) { showUserForm(index); }
 
-function saveUser() {
+async function saveUser() {
     const idIndex = document.getElementById('formUserId').value;
+    const isNew = (idIndex === '');
     const userObj = { 
-        id: idIndex !== '' ? usersData[idIndex].id : 'U' + Date.now(), 
+        id: !isNew ? usersData[idIndex].id : 'U' + Date.now(), 
         username: document.getElementById('formUserUsername').value, pass: document.getElementById('formUserPassword').value, 
         nama: document.getElementById('formUserNama').value, email: document.getElementById('formUserEmail').value, 
         phone: document.getElementById('formUserPhone').value, role: document.getElementById('formUserRole').value, exp: document.getElementById('formUserExp').value,
-        devices: idIndex !== '' ? usersData[idIndex].devices : "[]" 
+        devices: !isNew ? usersData[idIndex].devices : "[]" 
     };
     
     if(!userObj.username || !userObj.pass || !userObj.exp) return appAlert("System ID, Key, dan Exp Date wajib diisi!", "Validation Error", "error");
     
     let backupArray = [...usersData]; 
-    if(idIndex !== '') usersData[idIndex] = userObj; else usersData.push(userObj);
+    if(!isNew) usersData[idIndex] = userObj; else usersData.push(userObj);
     
     document.getElementById('userFormContainer').style.display = 'none';
     renderAdminUserTable(); 
-    appAlert("Data berhasil dimodifikasi! Sinkronisasi latar belakang berjalan...", "Success", "success");
+    appAlert("Data berhasil dimodifikasi! Sinkronisasi telemetri...", "Success", "success");
     
-    apiRequest('sync_users', usersData).then(res => {
-        if(!res.success) { 
-            usersData = backupArray; 
-            renderAdminUserTable();
-            appAlert("Gagal menyimpan ke Database Server: " + res.message, "Sync Error", "error"); 
-        }
-    });
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userObj.id), userObj);
+    } catch(e) {
+        usersData = backupArray; 
+        renderAdminUserTable();
+        appAlert("Gagal menyimpan ke Database Server: " + e.message, "Sync Error", "error"); 
+    }
 }
 
-function deleteUser(index) {
+async function deleteUser(index) {
     if(usersData[index].username === 'drmesin03') return appAlert("Akun Admin Utama tidak bisa dihapus demi keamanan.", "Access Denied", "error");
-    appConfirm("Delete this member permanently dari database?", function(yes) {
+    appConfirm("Hapus member ini secara permanen dari database?", async function(yes) {
         if(yes) { 
             let backupArray = [...usersData]; 
+            const uId = usersData[index].id;
             usersData.splice(index, 1); 
             renderAdminUserTable(); 
 
-            apiRequest('sync_users', usersData).then(res => {
-                if(!res.success) { 
-                    usersData = backupArray; 
-                    renderAdminUserTable(); 
-                    appAlert("Gagal menghapus dari server: " + res.message, "Sync Error", "error"); 
-                }
-            });
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', uId));
+            } catch(e) {
+                usersData = backupArray; 
+                renderAdminUserTable(); 
+                appAlert("Gagal menghapus dari server: " + e.message, "Sync Error", "error"); 
+            }
         }
     });
 }
@@ -1896,10 +2482,10 @@ function renderAdminAppTable() {
         let baseType = (app.type && app.type.includes('_')) ? app.type.split('_')[0] : app.type;
         
         if(!app.parentId) { 
-            let typeDesc = "RIGHT";
-            if(baseType === "large-red") typeDesc = "LEFT";
-            if(baseType === "bottom-tab") typeDesc = "BOTTOM";
-            levelText = `<b style="color:var(--primary-red)">ROOT (${typeDesc})</b>`; 
+            let rootTag = 'RIGHT';
+            if (baseType === 'large-red') rootTag = 'LEFT';
+            if (baseType === 'bottom-tab') rootTag = 'BOTTOM';
+            levelText = `<b style="color:var(--primary-red)">ROOT (${rootTag})</b>`; 
         } 
         else {
             let pathArr = app.breadcrumb.split(' > '); pathArr.pop(); 
@@ -1938,8 +2524,8 @@ function showAppForm(isEdit = false) {
     }
 }
 
-function editApp(appId) {
-    const index = appsData.findIndex(a => a.id === appId); if (index === -1) return;
+function editApp(targetAppId) {
+    const index = appsData.findIndex(a => a.id === targetAppId); if (index === -1) return;
     const app = appsData[index];
     populateParentDropdown(app.id); 
     
@@ -1954,10 +2540,10 @@ function editApp(appId) {
     showAppForm(true);
 }
 
-function saveApp() {
-    const appId = document.getElementById('formAppId').value;
+async function saveApp() {
+    const formAppIdVal = document.getElementById('formAppId').value;
     const contentType = document.getElementById('formAppContentType').value;
-    let isNew = (appId === ''); let finalContent = '';
+    let isNew = (formAppIdVal === ''); let finalContent = '';
 
     if (contentType === 'html') { finalContent = document.getElementById('formAppContent').value; } 
     else if (['pdf','web','mp4','image'].includes(contentType)) { finalContent = document.getElementById('formAppUrl').value; if (!finalContent) return appAlert("Target Source URL is required!", "Field Required", "warning"); }
@@ -1967,16 +2553,16 @@ function saveApp() {
     let finalType = baseType;
     
     if (!isNew) {
-        let oldApp = appsData.find(a => a.id === appId);
+        let oldApp = appsData.find(a => a.id === formAppIdVal);
         let oldAccess = (oldApp.type && oldApp.type.includes('_')) ? oldApp.type.split('_')[1] : '';
         if(oldAccess) { finalType = baseType ? baseType + '_' + oldAccess : '_' + oldAccess; }
     }
 
-    const appObj = { id: isNew ? 'MENU_' + Date.now() : appId, parentId: parentId, title: document.getElementById('formAppTitle').value, type: finalType, icon: document.getElementById('formAppIcon').value || 'fa-folder', badge: document.getElementById('formAppBadge').value, contentType: contentType, content: finalContent };
+    const appObj = { id: isNew ? 'MENU_' + Date.now() : formAppIdVal, parentId: parentId, title: document.getElementById('formAppTitle').value, type: finalType, icon: document.getElementById('formAppIcon').value || 'fa-folder', badge: document.getElementById('formAppBadge').value, contentType: contentType, content: finalContent };
     if(!appObj.title) return appAlert("Module Name is required!", "Field Required", "warning");
     
     let backupArray = [...appsData]; 
-    if(!isNew) { const index = appsData.findIndex(a => a.id === appId); if(index !== -1) appsData[index] = appObj; } 
+    if(!isNew) { const index = appsData.findIndex(a => a.id === formAppIdVal); if(index !== -1) appsData[index] = appObj; } 
     else { appsData.push(appObj); }
     
     updateAppDictionary();
@@ -1985,46 +2571,53 @@ function saveApp() {
     if(menuStack.length > 0) renderCurrentMenuState(); 
     if (isNew && contentType === 'folder') { openMenu(appObj.id); }
 
-    apiRequest('sync_apps', appsData).then(res => {
-        if(!res.success) { 
-            appsData = backupArray; updateAppDictionary();
-            renderAdminAppTable(); renderDynamicApps(); 
-            appAlert("Gagal menyimpan ke server: " + res.message, "Sync Error", "error"); 
-        }
-    });
+    try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', appObj.id), appObj);
+    } catch(e) {
+        appsData = backupArray; updateAppDictionary();
+        renderAdminAppTable(); renderDynamicApps(); 
+        appAlert("Gagal menyimpan ke server: " + e.message, "Sync Error", "error"); 
+    }
 }
 
-function deleteNodeRecursive(nodeId) {
+async function deleteNodeRecursive(nodeId) {
     const children = appsData.filter(a => a.parentId === nodeId);
-    children.forEach(child => deleteNodeRecursive(child.id));
+    for (let child of children) {
+        await deleteNodeRecursive(child.id);
+    }
     const index = appsData.findIndex(a => a.id === nodeId);
-    if (index !== -1) { appsData.splice(index, 1); }
+    if (index !== -1) { 
+        appsData.splice(index, 1); 
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', nodeId));
+    }
 }
 
-function deleteApp(appId) {
-    const index = appsData.findIndex(a => a.id === appId); if (index === -1) return;
+async function deleteApp(targetAppId) {
+    const index = appsData.findIndex(a => a.id === targetAppId); if (index === -1) return;
     const app = appsData[index]; const hasChildren = appsData.some(a => a.parentId === app.id);
     let confirmMsg = `Apakah Anda yakin ingin menghapus "${app.title}" secara permanen dari Database?`;
     if(hasChildren) { confirmMsg = `PERINGATAN! "${app.title}" masih berisi Sub-Menu/Folder lain di dalamnya.\n\nApakah Anda yakin ingin menghapus folder ini BESERTA SELURUH ISINYA dari Database?`; }
 
-    appConfirm(confirmMsg, function(agreed) {
+    appConfirm(confirmMsg, async function(agreed) {
         if(agreed) {
             let backupArray = [...appsData]; 
-            deleteNodeRecursive(appId); 
-            updateAppDictionary();
+            document.getElementById('loadingOverlay').style.display = 'flex';
             
-            const isCurrentDeleted = menuStack.some(m => m.id === appId);
-            if(isCurrentDeleted) { menuStack = []; document.getElementById('detailScreen').style.display = 'none'; }
-            renderAdminAppTable(); renderDynamicApps(); 
-            if(menuStack.length > 0) renderCurrentMenuState(); 
-
-            apiRequest('sync_apps', appsData).then(res => {
-                if(!res.success) { 
-                    appsData = backupArray; updateAppDictionary();
-                    renderAdminAppTable(); renderDynamicApps(); 
-                    appAlert("Gagal menghapus data dari server: " + res.message, "Sync Error", "error"); 
-                }
-            });
+            try {
+                await deleteNodeRecursive(targetAppId); 
+                updateAppDictionary();
+                
+                const isCurrentDeleted = menuStack.some(m => m.id === targetAppId);
+                if(isCurrentDeleted) { menuStack = []; document.getElementById('detailScreen').style.display = 'none'; }
+                renderAdminAppTable(); renderDynamicApps(); 
+                if(menuStack.length > 0) renderCurrentMenuState(); 
+            } catch(e) {
+                appsData = backupArray; updateAppDictionary();
+                renderAdminAppTable(); renderDynamicApps(); 
+                appAlert("Gagal menghapus data dari server: " + e.message, "Sync Error", "error"); 
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
     });
 }
@@ -2103,21 +2696,7 @@ detailScreenEl.addEventListener('touchstart', function() {
     if (detailScreenEl.classList.contains('immersive-mode')) showHeaderBriefly();
 }, {passive: true});
 
-// KEYBOARD SHORTCUT (ESC UNTUK KEMBALI) & ANTI-INSPECT DEVTOOLS
 document.addEventListener('keydown', function(e) {
-    // ANTI-INSPECT & DEVTOOLS
-    if (e.key === 'F12' || 
-       (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
-       (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
-        e.preventDefault(); return false;
-    }
-    
-    // ANTI-COPY: Blokir Ctrl+C, Ctrl+S kecuali sedang mengetik di input/textarea
-    const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
-    if (!isInput && e.ctrlKey && (e.key === 'C' || e.key === 'c' || e.key === 'S' || e.key === 's')) {
-        e.preventDefault(); return false;
-    }
-
     if (e.key === 'Escape') {
         const detailScreen = document.getElementById('detailScreen');
         const htmlPreviewer = document.getElementById('htmlPreviewerModal');
@@ -2139,172 +2718,158 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-function autoInjectApps() {
-    appConfirm("Aksi ini akan menghapus susunan menu saat ini dan mengisinya dengan Data Modul Otomatis (termasuk 4 Tab Bawah). Lanjutkan?", function(yes) {
+async function autoInjectApps() {
+    appConfirm("Aksi ini akan menghapus susunan menu saat ini dan mengisinya dengan Data Modul Otomatis (Frontend & Backend). Lanjutkan?", async function(yes) {
         if(yes) {
             document.getElementById('loadingOverlay').style.display = 'flex';
+            
             const defaultMenus = [
                 { id: "m1", parentId: null, title: "INTELLIGENT DIAGNOSE", type: "large-red", icon: "fa-microchip", badge: "", contentType: "html", content: "<div class='content-box'><h3>System Ready</h3><p>System will automatically scan vehicle topology network.</p></div>" },
-                { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red_ULTIMATE", icon: "fa-cogs", badge: "", contentType: "html", content: "<div class='content-box'><h3>Auto Transmission</h3></div>" },
+                { id: "m2", parentId: null, title: "AUTOTRANS", type: "large-red", icon: "fa-cogs", badge: "VIP", contentType: "html", content: "<div class='content-box'><h3>Autotrans Active</h3><p>Diagnostic transmission systems interfaces.</p></div>" },
+                
                 { id: "m3", parentId: null, title: "GLOBAL AUTO FLUID", type: "small-dark", icon: "fa-network-wired", badge: "", contentType: "folder", content: "" },
                 { id: "m4", parentId: null, title: "LOCAL DIAGNOSE", type: "small-dark", icon: "fa-wrench", badge: "", contentType: "folder", content: "" },
-                { id: "m5", parentId: null, title: "SERVICE FUNCTION", type: "small-dark", icon: "fa-sync-alt", badge: "", contentType: "folder", content: "" },
-                { id: "m6", parentId: null, title: "SERTIVIKASI MEKANIK", type: "small-dark", icon: "fa-database", badge: "", contentType: "folder", content: "" },
-                { id: "m7", parentId: null, title: "OIL RESET", type: "small-dark", icon: "fa-oil-can", badge: "", contentType: "folder", content: "" },
-                { id: "m8", parentId: null, title: "IGNITIONSPEC", type: "small-dark", icon: "fa-bolt", badge: "", contentType: "folder", content: "" },
-                { id: "m9", parentId: null, title: "TUTORIAL MP4", type: "small-dark", icon: "fa-play-circle", badge: "", contentType: "folder", content: "" },
+                { id: "m5", parentId: null, title: "ECU", type: "small-dark_PRO", icon: "fa-tachometer-alt", badge: "PRO", contentType: "folder", content: "" },
+                { id: "m6", parentId: null, title: "SERVICE FUNCTION", type: "small-dark", icon: "fa-sync-alt", badge: "", contentType: "folder", content: "" },
+                { id: "m7", parentId: null, title: "SERTIFIKASI MEKANIK", type: "small-dark", icon: "fa-database", badge: "", contentType: "folder", content: "" },
+                { id: "m8", parentId: null, title: "OIL RESET", type: "small-dark", icon: "fa-oil-can", badge: "", contentType: "folder", content: "" },
+                { id: "m9", parentId: null, title: "VIDEO AREA", type: "small-dark", icon: "fa-video", badge: "", contentType: "folder", content: "" },
+                { id: "m10", parentId: null, title: "IGNITIONSPEC", type: "small-dark", icon: "fa-bolt", badge: "", contentType: "folder", content: "" },
+                { id: "m11", parentId: null, title: "IMMOBILIZER", type: "small-dark", icon: "fa-shield-alt", badge: "", contentType: "folder", content: "" },
+                { id: "m12", parentId: null, title: "TUTORIAL MP4", type: "small-dark", icon: "fa-play-circle", badge: "", contentType: "folder", content: "" },
+                { id: "m13", parentId: null, title: "QUICK SUPPORT", type: "small-dark", icon: "fa-headset", badge: "HOT", contentType: "teamviewer", content: "" },
                 
-                { id: "b1", parentId: null, title: "ECU", type: "bottom-tab_PRO", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>ECU Mapping</h3></div>" },
-                { id: "b2", parentId: null, title: "VIDEO AREA", type: "bottom-tab", icon: "fa-desktop", badge: "", contentType: "html", content: "<div class='content-box'><h3>Video Documentation</h3></div>" },
-                { id: "b3", parentId: null, title: "IMMOBILIZER", type: "bottom-tab", icon: "fa-shield-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>Immobilizer Setting</h3></div>" },
-                { id: "b4", parentId: null, title: "QUICK SUPPORT", type: "bottom-tab", icon: "fa-headset", badge: "", contentType: "teamviewer", content: "" }
+                { id: "b1", parentId: null, title: "FAMIL SETTING", type: "bottom-tab", icon: "fa-tachometer-alt", badge: "", contentType: "html", content: "<div class='content-box'><h3>FAMIL SETTING</h3><p>Diagnostic parameter settings and calibration threshold configurations.</p></div>" },
+                { id: "b2", parentId: null, title: "GOVER SCRUE", type: "bottom-tab", icon: "fa-file-invoice", badge: "", contentType: "html", content: "<div class='content-box'><h3>GOVER SCRUE</h3><p>Official diagnostic compliance protocols, security certificates, and legal compliance registries.</p></div>" },
+                { id: "b3", parentId: null, title: "SYSTENCE ATATS", type: "bottom-tab", icon: "fa-briefcase", badge: "", contentType: "html", content: "<div class='content-box'><h3>SYSTENCE ATATS</h3><p>System status reports, firmware patch configurations, and core memory state logs.</p></div>" },
+                { id: "b4", parentId: null, title: "SETTINGH PODE", type: "bottom-tab", icon: "fa-tools", badge: "", contentType: "html", content: "<div class='content-box'><h3>SETTINGH PODE</h3><p>Advanced diagnostic settings, interface customization options, and secure cryptographic code settings.</p></div>" },
+                
+                { id: "sub1", parentId: "m4", title: "ASIAN CARS", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
+                { id: "sub2", parentId: "m4", title: "EUROPEAN CARS", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
+                { id: "sub_a1", parentId: "sub1", title: "TOYOTA", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
+                { id: "sub_a2", parentId: "sub1", title: "HONDA", type: "small-dark", icon: "fa-car", badge: "", contentType: "folder", content: "" },
+                { id: "sub_t1", parentId: "sub_a1", title: "REPAIR MANUAL", type: "small-dark_PRO", icon: "fa-book", badge: "PRO", contentType: "folder", content: "" },
+                { id: "sub_r1", parentId: "sub_t1", title: "WIRING DIAGRAM", type: "small-dark_ULTIMATE", icon: "fa-plug", badge: "VIP", contentType: "image", content: "https://placehold.co/800x600/111/ff2a2a?text=Wiring+Diagram+Toyota" }
             ];
             
             appsData = defaultMenus;
             updateAppDictionary();
             
-            apiRequest('sync_apps', appsData).then(res => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                if(res.success) {
-                    renderAdminAppTable(); renderDynamicApps();
-                    if(menuStack.length > 0) renderCurrentMenuState();
-                    appAlert("Data Menu berhasil dimasukkan ke Frontend & Backend secara otomatis!", "Auto-Inject Sukses", "success");
-                } else {
-                    appAlert("Gagal sinkronisasi ke server: " + res.message, "Sync Error", "error");
+            try {
+                const appsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'apps'));
+                for (let d of appsSnap.docs) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', d.id));
                 }
-            });
+                for (let appObj of appsData) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', appObj.id), appObj);
+                }
+                renderAdminAppTable(); renderDynamicApps();
+                if(menuStack.length > 0) renderCurrentMenuState();
+                appAlert("Data Menu berhasil dimasukkan ke Cloud Firestore secara otomatis!", "Auto-Inject Sukses", "success");
+            } catch(e) {
+                appAlert("Gagal sinkronisasi ke server: " + e.message, "Sync Error", "error");
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
     });
 }
 
-function autoInjectUsers() {
-    appConfirm("Tambahkan 3 Data Akun Member otomatis (Mekanik, PRO, dan ULTIMATE) untuk testing? Akun yang lama tidak akan dihapus.", function(yes) {
+async function autoInjectUsers() {
+    appConfirm("Tambahkan 3 Data Akun Member otomatis (Mekanik, PRO, dan ULTIMATE) untuk testing? Akun yang lama tidak akan dihapus.", async function(yes) {
         if(yes) {
             document.getElementById('loadingOverlay').style.display = 'flex';
-            // Username dan Passwords di-encode untuk keamanan source code
+            // Penggunaan atob untuk menyembunyikan username & password default selama auto-inject
             const dummyUsers = [
-                { id: 'U' + Date.now() + '1', username: atob("bWVrYW5pa19wcm8="), pass: atob("MTIzNDU="), role: "PRO", nama: "Tester PRO", email: "pro@bengkel.com", phone: "628111", exp: "2099-12-31", devices: "[]" },
-                { id: 'U' + Date.now() + '2', username: atob("bWVrYW5pa192aXA="), pass: atob("MTIzNDU="), role: "ULTIMATE", nama: "Tester VIP", email: "vip@bengkel.com", phone: "628222", exp: "2099-12-31", devices: "[]" },
-                { id: 'U' + Date.now() + '3', username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Tester Reguler", email: "reg@bengkel.com", phone: "628333", exp: "2099-12-31", devices: "[]" }
+                { id: 'U' + Date.now() + '1', username: atob("bWVrYW5pa19wcm8="), pass: atob("MTIzNDU="), role: "PRO", nama: "Tester PRO", email: "pro@bengkel.com", phone: "628111", exp: "2030-12-31", devices: "[]" },
+                { id: 'U' + Date.now() + '2', username: atob("bWVrYW5pa192aXA="), pass: atob("MTIzNDU="), role: "ULTIMATE", nama: "Tester VIP", email: "vip@bengkel.com", phone: "628222", exp: "2030-12-31", devices: "[]" },
+                { id: 'U' + Date.now() + '3', username: atob("bWVrYW5pa19iaWFzYQ=="), pass: atob("MTIzNDU="), role: "Mekanik", nama: "Tester Regular", email: "reg@bengkel.com", phone: "628333", exp: "2030-12-31", devices: "[]" }
             ];
             
             usersData = usersData.concat(dummyUsers);
             
-            apiRequest('sync_users', usersData).then(res => {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                if(res.success) {
-                    renderAdminUserTable();
-                    appAlert("Data User berhasil ditambahkan ke Frontend & Backend secara otomatis!", "Auto-Inject Sukses", "success");
-                } else {
-                    appAlert("Gagal sinkronisasi ke server: " + res.message, "Sync Error", "error");
+            try {
+                for (let user of dummyUsers) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.id), user);
                 }
-            });
+                renderAdminUserTable();
+                appAlert("Data User berhasil ditambahkan ke Cloud Firestore secara otomatis!", "Auto-Inject Sukses", "success");
+            } catch(e) {
+                appAlert("Gagal sinkronisasi ke server: " + e.message, "Sync Error", "error");
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
     });
 }
 
+// BIND SEMUA FUNGSI MODUL SECARA GLOBAL KE JENDELA (WINDOW) AGAR ELEMEN HTML BISA MEMANGGILNYA
+window.handleLoginEnter = handleLoginEnter;
+window.prosesLogin = prosesLogin;
+window.revealLogin = revealLogin;
+window.openAdminPanel = openAdminPanel;
+window.openChatScreen = openChatScreen;
+window.openProfile = openProfile;
+window.logout = logout;
+window.closeModal = closeModal;
+window.clearChatHistory = clearChatHistory;
+window.sendChatMessage = sendChatMessage;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.changeZoom = changeZoom;
+window.resetZoom = resetZoom;
+window.goBack = goBack;
+window.jumpToMenuLevel = jumpToMenuLevel;
+window.quickCreateNode = quickCreateNode;
+window.quickEditNode = quickEditNode;
+window.quickDeleteNode = quickDeleteNode;
+window.setNodeAccess = setNodeAccess;
+window.selectIcon = selectIcon;
+window.switchAdminTab = switchAdminTab;
+window.saveHeaderConfig = saveHeaderConfig;
+window.showUserForm = showUserForm;
+window.editUser = editUser;
+window.saveUser = saveUser;
+window.deleteUser = deleteUser;
+window.renderAdminAppTable = renderAdminAppTable;
+window.showAppForm = showAppForm;
+window.editApp = editApp;
+window.saveApp = saveApp;
+window.deleteApp = deleteApp;
+window.openPreviewFromForm = openPreviewFromForm;
+window.applyPreviewToForm = applyPreviewToForm;
+window.runLivePreview = runLivePreview;
+window.autoInjectApps = autoInjectApps;
+window.autoInjectUsers = autoInjectUsers;
+window.flipPage = flipPage;
+window.contactAdminWA = contactAdminWA;
+window.closeContextMenu = closeContextMenu;
+window.handleChatEnter = handleChatEnter;
+window.toggleContentType = toggleContentType;
+window.openMenu = openMenu;
+
+const swCode = `
+const CACHE_NAME = 'drcardata-pro-v3';
+self.addEventListener('install', e => {
+    self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+    e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', e => {
+    e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+    );
+});
+`;
+const swBlob = new Blob([swCode], { type: 'application/javascript' });
+const swUrl = URL.createObjectURL(swBlob);
+navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Registration failed:', err));
 </script>
 
 <script defer type="text/javascript">
 function googleTranslateElementInit() { new google.translate.TranslateElement({ pageLanguage: 'id', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_element'); }
 </script>
 <script defer type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-window.initFirebaseForChat = async function() {
-    try {
-        if (typeof __firebase_config === 'undefined') return false;
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'drcardata-app';
-        
-        // Gunakan token khusus jika tersedia, atau masuk anonim
-        if (typeof __initial_auth_token !== 'undefined') {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
-        }
-        
-        window.fbDb = db;
-        window.fbAppId = appId;
-        return true;
-    } catch (error) {
-        console.error("Kesalahan Inisialisasi Firebase Chat:", error);
-        return false;
-    }
-};
-
-window.listenToGlobalChat = function() {
-    if (!window.fbDb || !window.fbAppId) return;
-    
-    // Path public yang aman
-    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
-    
-    onSnapshot(chatRef, (snapshot) => {
-        let messages = [];
-        snapshot.forEach(doc => {
-            messages.push({ docId: doc.id, ...doc.data() });
-        });
-        
-        // Sortir di memori berdasarkan waktu untuk menghindari error indeks query firebase
-        messages.sort((a, b) => a.timestamp - b.timestamp);
-        
-        window.chatMessagesData = messages.map(m => ({
-            sender: m.sender,
-            name: m.name,
-            text: m.text,
-            time: new Date(m.timestamp).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})
-        }));
-        
-        if (window.chatMessagesData.length === 0) {
-            window.chatMessagesData = [{ 
-                sender: 'system', 
-                name: 'SYSTEM', 
-                text: 'Global Secure Communication Channel Established.', 
-                time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) 
-            }];
-        }
-        
-        if (typeof window.renderChatMessages === 'function') {
-            window.renderChatMessages();
-        }
-    }, (err) => {
-        console.error("Chat sync error:", err);
-    });
-};
-
-window.sendChatMsgToFirebase = async function(sender, name, text) {
-    if (!window.fbDb || !window.fbAppId) return false;
-    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
-    await addDoc(chatRef, {
-        sender: sender,
-        name: name,
-        text: text,
-        timestamp: Date.now()
-    });
-    return true;
-};
-
-window.clearGlobalChatFirebase = async function() {
-    if (!window.fbDb || !window.fbAppId) return false;
-    const chatRef = collection(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat');
-    const snapshot = await getDocs(chatRef);
-    
-    // Hapus seluruh dokumen pada koleksi
-    const deletePromises = [];
-    snapshot.forEach(d => {
-        deletePromises.push(deleteDoc(doc(window.fbDb, 'artifacts', window.fbAppId, 'public', 'data', 'global_chat', d.id)));
-    });
-    await Promise.all(deletePromises);
-    return true;
-};
-</script>
 
 </body>
 </html>
