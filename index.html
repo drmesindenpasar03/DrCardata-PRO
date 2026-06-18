@@ -97,9 +97,7 @@
             color: #e60000;
             margin-right: 8px;
             font-size: 16px;
-            animation: spin-globe 8s linear infinite;
         }
-        @keyframes spin-globe { 100% { transform: rotate(360deg); } }
         
         /* Sembunyikan banner pengganggu Google Translate */
         .goog-te-banner-frame.skiptranslate, #goog-gt-tt { display: none !important; }
@@ -683,7 +681,7 @@
                 <div class="click-hint">TAP TO CONFIGURE DEVICE</div>
             </div>
             <div class="login-form-wrap">
-                <h2>SECURE SYSTEM PORTAL</h2>
+                <h2>DRCARDATA-<span style="color: var(--primary-red);">PRO</span></h2>
                 <div class="input-group">
                     <i class="fas fa-user"></i>
                     <input type="text" id="username" placeholder="System ID / Admin Email" autocomplete="username" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -1018,7 +1016,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, co
 
 const IS_PREVIEW = false; // Di-set ke false karena aplikasi sudah menggunakan data dan server nyata
 
-const appId = 'drcardata-pro-telemetri';
+const appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'drcardata-pro-telemetri';
 
 // CONFIG FIREBASE CLOUD (LIVE)
 const firebaseConfig = {
