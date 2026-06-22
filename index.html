@@ -1725,10 +1725,13 @@ async function setNodeAccess(level) {
     let appObj = appsData[index]; let baseType = (appObj.type && appObj.type.includes('_')) ? appObj.type.split('_')[0] : (appObj.type || '');
     if(level === '') appObj.type = baseType; else appObj.type = baseType ? baseType + '_' + level : '_' + level;
     updateAppDictionary(); renderDynamicApps(); if(menuStack.length > 0) renderCurrentMenuState();
-    try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', appObj.id), appObj); } catch(e) { console.error("Gagal memperbarui level keamanan modul:", e); }
+    try { setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'apps', appObj.id), appObj); } catch(e) { console.error("Gagal memperbarui level keamanan modul:", e); }
 }
 
-function quickCreateNode() { closeContextMenu(); showAppForm(false); setTimeout(() => { const parentSelect = document.getElementById('formAppParent'); if (parentSelect) { parentSelect.value = quickCreateParentId; toggleContentType(); } }, 50); }
+function quickCreateNode() { 
+    closeContextMenu(); 
+    showAppForm(false, quickCreateParentId); 
+}
 function quickEditNode() { closeContextMenu(); if(rightClickedAppId) editApp(rightClickedAppId); }
 function quickDeleteNode() { closeContextMenu(); if(rightClickedAppId) deleteApp(rightClickedAppId); }
 
@@ -1829,9 +1832,44 @@ function toggleContentType() {
     const parentId = document.getElementById('formAppParent').value; const typeGroup = document.getElementById('typeGroup'); if (typeGroup) typeGroup.style.display = parentId ? 'none' : 'flex';
 }
 
-function showAppForm(isEdit = false) {
-    populateParentDropdown(); document.getElementById('appFormContainer').style.display = 'flex'; document.getElementById('appFormTitle').innerText = isEdit ? 'Edit Node / Rename' : 'Create New Node'; document.querySelectorAll('.icon-item').forEach(el => el.classList.remove('selected'));
-    if(!isEdit) { ['formAppId','formAppTitle','formAppIcon','formAppBadge','formAppContent','formAppUrl','formAppParent'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); document.getElementById('formAppType').value = 'small-dark'; document.getElementById('formAppContentType').value = 'folder'; toggleContentType(); }
+function showAppForm(isEdit = false, overrideParentId = null) {
+    populateParentDropdown(); 
+    document.getElementById('appFormContainer').style.display = 'flex'; 
+    document.getElementById('appFormTitle').innerText = isEdit ? 'Edit Node / Rename' : 'Create New Node'; 
+    document.querySelectorAll('.icon-item').forEach(el => el.classList.remove('selected'));
+    
+    if(!isEdit) { 
+        ['formAppId','formAppTitle','formAppIcon','formAppBadge','formAppContent','formAppUrl'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); 
+        
+        let targetParentId = '';
+        let defaultType = 'small-dark';
+        
+        // Logika Deteksi Otomatis untuk Parent Node & Visual Style
+        if (overrideParentId !== null) {
+            targetParentId = overrideParentId;
+        } else if (menuStack.length > 0) {
+            targetParentId = menuStack[menuStack.length - 1].id;
+        }
+
+        if (targetParentId && appDictionary[targetParentId]) {
+            let rootApp = appDictionary[targetParentId];
+            let safeguard = 0;
+            while (rootApp.parentId && safeguard < 20) {
+                rootApp = appDictionary[rootApp.parentId] || rootApp;
+                safeguard++;
+            }
+            defaultType = (rootApp.type && rootApp.type.includes('_')) ? rootApp.type.split('_')[0] : (rootApp.type || 'small-dark');
+        } else if (targetParentId === "" && rightClickedAppId && appDictionary[rightClickedAppId]) {
+            let clickedApp = appDictionary[rightClickedAppId];
+            defaultType = (clickedApp.type && clickedApp.type.includes('_')) ? clickedApp.type.split('_')[0] : (clickedApp.type || 'small-dark');
+        }
+        
+        const parentSelect = document.getElementById('formAppParent');
+        if (parentSelect) parentSelect.value = targetParentId;
+        document.getElementById('formAppType').value = defaultType; 
+        document.getElementById('formAppContentType').value = 'folder'; 
+        toggleContentType(); 
+    }
 }
 
 function editApp(targetAppId) {
